@@ -1,11 +1,11 @@
 variable "aws_region" {
   description = "The AWS region for this Terraform run"
-  default     = "us-east-1"
+  default     = "eu-west-1"
 }
 
 variable "account_pool_metrics_toggle" {
   description = "Set to 'true' to enable periodic scanning of the Accounts table for account status metrics. Defaults to 'false'"
-  default     = "false"
+  default     = "true"
 }
 
 variable "account_pool_metrics_collection_rate_expression" {
@@ -30,6 +30,7 @@ variable "global_tags" {
 
 variable "namespace" {
   description = "The namespace for this Terraform run"
+  default = "bluepi"
 }
 
 variable "reset_nuke_template_bucket" {
@@ -69,7 +70,7 @@ variable "reset_nuke_toggle" {
 
 variable "cloudwatch_dashboard_toggle" {
   description = "Set to 'true' to enable an out of the box cloudwatch dashboard. Defaults to 'false."
-  default     = "false"
+  default     = "true"
 }
 
 variable "populate_reset_queue_schedule_expression" {
@@ -94,13 +95,13 @@ variable "check_budget_enabled" {
 }
 variable "budget_notification_from_email" {
   type    = string
-  default = "notifications@example.com"
+  default = "a.chahbour@zeroandone.me"
 }
 
 variable "budget_notification_bcc_emails" {
   type        = list(string)
   description = "Budget notifications emails will be bcc-d to these addresses"
-  default     = []
+  default     = ["a.chahbour@zeroandone.me"]
 }
 
 variable "budget_notification_template_html" {
@@ -146,7 +147,7 @@ SUBJ
 variable "budget_notification_threshold_percentiles" {
   type        = list(number)
   description = "Thresholds (percentiles) at which budget notification emails will be sent to users."
-  default     = [75, 100]
+  default     = [75, 90, 100]
 }
 
 variable "principal_policy" {
@@ -201,7 +202,7 @@ variable "max_lease_budget_amount" {
 variable "max_lease_period" {
   type        = number
   description = "Lease's maximum period in seconds"
-  default     = 604800
+  default     = 7776000
 }
 
 variable "principal_budget_amount" {
@@ -219,7 +220,7 @@ variable "principal_budget_period" {
 variable "allowed_regions" {
   type = list(string)
   default = [
-    "us-east-1"
+    "us-east-1", "eu-west-1", "me-central-1"
   ]
   description = "List of AWS regions which DCE Principals have access to. These regions will also be targeted for reset in nuke.yml."
 }
@@ -233,7 +234,7 @@ variable "orphaned_accounts_alarm_threshold" {
 variable "ready_accounts_alarm_threshold" {
   type        = string
   description = "Alarm when number of ready accounts is less than or equal to this threshold."
-  default     = "20"
+  default     = "5"
 }
 
 variable "usage_ttl" {

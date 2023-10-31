@@ -7,6 +7,7 @@ import (
 	"github.com/Optum/dce/pkg/account"
 	"github.com/Optum/dce/pkg/errors"
 	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/imdario/mergo"
 )
 
 // Writer put an item into the data store
@@ -167,6 +168,37 @@ func (a *Service) List(query *Lease) (*Leases, error) {
 	}
 
 	return leases, nil
+}
+
+// Update the Lease record in DynamoDB
+func (a *Service) Update(ID string, data *Lease) (*Lease, error) {
+
+	err := validation.ValidateStruct(data,
+		// ID has to be empty
+		validation.Field(&data.ID, validation.NilOrNotEmpty, validation.In(ID)),
+		//validation.Field(&data.BudgetAmount, validation.Ni),
+		//validation.Field(&data.ExpiresOn, validation.By(isNilOrUsableAdminRole(a.managerSvc))),
+	)
+	if err != nil {
+		return nil, errors.NewValidation("lease", err)
+	}
+
+	lease, err := a.dataSvc.Get(ID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = mergo.Merge(lease, *data, mergo.WithOverride)
+	if err != nil {
+		return nil, errors.NewInternalServer("unexpected error updating lease", err)
+	}
+
+	err = a.dataSvc.Write(lease, lease.LastModifiedOn)
+
+	if err != nil {
+		return nil, err
+	}
+	return lease, nil
 }
 
 // Create creates a new lease using the data provided. Returns the lease record

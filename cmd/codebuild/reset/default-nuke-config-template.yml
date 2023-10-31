@@ -8,12 +8,27 @@ regions:
 account-blacklist:
   - "{{ .ParentAccountID}}" # Arbitrary production account id
 
+presets:
+  sso:
+    filters:
+      IAMSAMLProvider:
+      - type: "regex"
+        value: "AWSSSO_.*_DO_NOT_DELETE"
+      IAMRole:
+      - type: "glob"
+        value: "AWSReservedSSO_*"
+      IAMRolePolicyAttachment:
+      - type: "glob"
+        value: "AWSReservedSSO_*"
+
 resource-types:
   excludes:
     - S3Object # Let the S3Bucket delete all Objects instead of individual objects (optimization)
 
 accounts:
   "{{ .ID}}": # Child Account
+    presets:
+      - sso
     filters:
       IAMPolicy:
         - type: "contains"
