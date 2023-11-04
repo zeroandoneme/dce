@@ -50,5 +50,6 @@ jobs:
       run: terraform apply -auto-approve -input=false
 
     - name: Deploy Code
+      working-directory: ./
       if: github.ref == 'refs/heads/qa' && github.event_name == 'push'
       run: make deploy
