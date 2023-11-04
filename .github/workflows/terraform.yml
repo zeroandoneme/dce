@@ -22,11 +22,11 @@ jobs:
 
     steps:
     - name: Configure aws credentials
-      uses: aws-actions/configure-aws-credentials@v2
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: arn:aws:iam::630116293498:role/github_action
         aws-region: eu-west-1
-
+        output-credentials: true
     - name: Checkout
       uses: actions/checkout@v3
 
@@ -48,6 +48,10 @@ jobs:
     - name: Terraform Apply
       if: github.ref == 'refs/heads/qa' && github.event_name == 'push'
       run: terraform apply -auto-approve -input=false
+
+    - name: get caller identity
+      working-directory: ./
+      run: aws sts get-caller-identity
 
     - name: Deploy Code
       working-directory: ./
