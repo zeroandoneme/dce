@@ -2,9 +2,8 @@ name: 'Deploy DCE'
 
 on:
   push:
-    branches: [ "main" , "qa" ]
+    branches: [ "prod" , "qa" ]
   pull_request:
-    branches: [ "main" , "qa" ]
 
 permissions:
   id-token: write
@@ -14,7 +13,7 @@ jobs:
   terraform:
     name: 'deploy arch'
     runs-on: ubuntu-latest
-    environment: production
+    environment: ${{ github.ref == 'refs/heads/prod' && 'production' || 'qa' }}
     defaults:
       run:
         shell: bash
