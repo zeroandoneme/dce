@@ -34,6 +34,7 @@ jobs:
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: 0.12.31
+        terraform_wrapper: false
 
     - name: Terraform Init
       run: terraform init
@@ -48,10 +49,6 @@ jobs:
     - name: Terraform Apply
       if: github.ref == 'refs/heads/qa' && github.event_name == 'push'
       run: terraform apply -auto-approve -input=false
-
-    - name: get caller identity
-      working-directory: ./
-      run: aws s3 ls
 
     - name: Deploy Code
       working-directory: ./
