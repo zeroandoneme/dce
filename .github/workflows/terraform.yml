@@ -51,7 +51,7 @@ jobs:
 
     - name: get caller identity
       working-directory: ./
-      run: aws sts get-caller-identity
+      run: aws s3 ls
 
     - name: Deploy Code
       working-directory: ./
