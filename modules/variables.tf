@@ -30,7 +30,7 @@ variable "global_tags" {
 
 variable "namespace" {
   description = "The namespace for this Terraform run"
-  default = "bluepi"
+  default     = "bluepi"
 }
 
 variable "reset_nuke_template_bucket" {
@@ -196,7 +196,7 @@ variable "cognito_roles_attribute_admin_name" {
 variable "max_lease_budget_amount" {
   type        = number
   description = "Lease budget amount for given lease budget period"
-  default     = 1000
+  default     = 5500
 }
 
 variable "max_lease_period" {
@@ -208,7 +208,7 @@ variable "max_lease_period" {
 variable "principal_budget_amount" {
   type        = number
   description = "User Principal's budget amount for given principal budget period"
-  default     = 1000
+  default     = 10000
 }
 
 variable "principal_budget_period" {

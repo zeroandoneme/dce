@@ -1,5 +1,11 @@
 terraform {
   required_version = "~>0.12.31"
+
+  backend "s3" {
+    bucket = "dce-terraform-qa"
+    key    = "dce"
+    region = "eu-west-1"
+  }
 }
 
 provider "aws" {
