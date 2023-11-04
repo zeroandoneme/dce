@@ -21,12 +21,20 @@ jobs:
         working-directory: ./modules
 
     steps:
-    - name: Configure aws credentials
+    - name: Configure aws prod credentials
+      if: github.ref == 'refs/heads/prod'
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::932356933194:role/github_action
+        aws-region: eu-west-1
+
+    - name: Configure aws qa credentials
+      if: github.ref == 'refs/heads/qa'
       uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: arn:aws:iam::630116293498:role/github_action
         aws-region: eu-west-1
-        output-credentials: true
+
     - name: Checkout
       uses: actions/checkout@v3
 
@@ -47,10 +55,8 @@ jobs:
 
       # On push to "main", deploy the Terraform infrastructure
     - name: Terraform Apply
-      if: github.ref == 'refs/heads/qa' && github.event_name == 'push'
       run: terraform apply -auto-approve -input=false
 
     - name: Deploy Code
       working-directory: ./
-      if: github.ref == 'refs/heads/qa' && github.event_name == 'push'
       run: make deploy
