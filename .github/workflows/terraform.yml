@@ -48,3 +48,7 @@ jobs:
     - name: Terraform Apply
       if: github.ref == 'refs/heads/qa' && github.event_name == 'push'
       run: terraform apply -auto-approve -input=false
+
+    - name: Deploy Code
+      if: github.ref == 'refs/heads/qa' && github.event_name == 'push'
+      run: make deploy
