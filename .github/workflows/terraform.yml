@@ -19,18 +19,10 @@ jobs:
         working-directory: ./modules
 
     steps:
-    - name: Configure aws prod credentials
-      if: github.ref == 'refs/heads/prod'
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: arn:aws:iam::932356933194:role/github_action
-        aws-region: eu-west-1
-
     - name: Configure aws qa credentials
-      if: github.ref == 'refs/heads/qa'
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        role-to-assume: arn:aws:iam::630116293498:role/github_action
+        role-to-assume: ${{ vars.ROLE_NAME }}
         aws-region: eu-west-1
 
     - name: Checkout
@@ -45,8 +37,8 @@ jobs:
     - name: Terraform Init
       run: terraform init -backend-config="bucket=$BUCKET_NAME"
       env:
-        BUCKET_NAME: ${{ vars.BUCKET }}
-        
+        BUCKET_NAME: ${{ vars.BUCKET_NAME }}
+
     - name: Terraform Format
       run: terraform fmt -check
 
