@@ -40,11 +40,13 @@ func calculateLeaseSpend(input *calculateSpendInput) (float64, error) {
 
 	//Get usage for current date and add it to Usage cache db
 	currentTime := time.Now()
+	todayCostAmount := 0.0
+	usageEndTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 23, 59, 59, 0, time.UTC)
 
-	for i := 0; i < 5; i++ {
+	for i := -4; i < 1; i++ {
 
-		usageStartTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, -i)
-		usageEndTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 23, 59, 59, 0, time.UTC).AddDate(0, 0, -i)
+		usageStartTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, i)
+		usageEndTime = time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 23, 59, 59, 0, time.UTC).AddDate(0, 0, i)
 
 		log.Printf("usageStart: %d and usageEnd :%d", usageStartTime.Unix(), usageEndTime.Unix())
 
@@ -53,7 +55,7 @@ func calculateLeaseSpend(input *calculateSpendInput) (float64, error) {
 			return 0, errors.Wrapf(err, "Failed to calculate spend for account %s", input.lease.AccountID)
 		}
 
-		log.Printf("usage is : %f", todayCostAmount)
+		log.Printf("usage for the day %s : %f", usageStartTime.Format("2006-01-02"), todayCostAmount)
 
 		// Write today's usage to DynamoDB
 		usageItem, err := usage.NewUsage(usage.NewUsageInput{
