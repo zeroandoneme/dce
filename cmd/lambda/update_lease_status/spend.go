@@ -40,34 +40,40 @@ func calculateLeaseSpend(input *calculateSpendInput) (float64, error) {
 
 	//Get usage for current date and add it to Usage cache db
 	currentTime := time.Now()
-	usageStartTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 0, 0, 0, 0, time.UTC)
-	usageEndTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 23, 59, 59, 0, time.UTC)
 
-	log.Printf("usageStart: %d and usageEnd :%d", usageStartTime.Unix(), usageEndTime.Unix())
-	todayCostAmount, err := input.budgetSvc.CalculateTotalSpend(usageStartTime, usageStartTime.AddDate(0, 0, 1))
-	if err != nil {
-		return 0, errors.Wrapf(err, "Failed to calculate spend for account %s", input.lease.AccountID)
-	}
+	for i := 0; i < 5; i++ {
 
-	log.Printf("usage for today: %f", todayCostAmount)
+		usageStartTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, -i)
+		usageEndTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 23, 59, 59, 0, time.UTC).AddDate(0, 0, -i)
 
-	// Write today's usage to DynamoDB
-	usageItem, err := usage.NewUsage(usage.NewUsageInput{
-		StartDate:    usageStartTime.Unix(),
-		EndDate:      usageEndTime.Unix(),
-		PrincipalID:  input.lease.PrincipalID,
-		AccountID:    input.account.ID,
-		CostAmount:   todayCostAmount,
-		CostCurrency: "USD",
-		TimeToLive:   usageStartTime.Add(time.Duration(input.usageTTL) * time.Second).Unix(),
-	})
-	if err != nil {
-		return 0, nil
-	}
+		log.Printf("usageStart: %d and usageEnd :%d", usageStartTime.Unix(), usageEndTime.Unix())
 
-	err = input.usageSvc.PutUsage(*usageItem)
-	if err != nil {
-		return 0, nil
+		todayCostAmount, err := input.budgetSvc.CalculateTotalSpend(usageStartTime, usageStartTime.AddDate(0, 0, 1))
+		if err != nil {
+			return 0, errors.Wrapf(err, "Failed to calculate spend for account %s", input.lease.AccountID)
+		}
+
+		log.Printf("usage is : %f", todayCostAmount)
+
+		// Write today's usage to DynamoDB
+		usageItem, err := usage.NewUsage(usage.NewUsageInput{
+			StartDate:    usageStartTime.Unix(),
+			EndDate:      usageEndTime.Unix(),
+			PrincipalID:  input.lease.PrincipalID,
+			AccountID:    input.account.ID,
+			CostAmount:   todayCostAmount,
+			CostCurrency: "USD",
+			TimeToLive:   usageStartTime.Add(time.Duration(input.usageTTL) * time.Second).Unix(),
+		})
+		if err != nil {
+			return 0, nil
+		}
+
+		err = input.usageSvc.PutUsage(*usageItem)
+		if err != nil {
+			return 0, nil
+		}
+
 	}
 
 	// Budget period starts last time the lease was reset.
