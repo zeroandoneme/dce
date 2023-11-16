@@ -38,15 +38,15 @@ func calculateLeaseSpend(input *calculateSpendInput) (float64, error) {
 		costexplorer.New(assumedSession),
 	)
 
-	//Get usage for current date and add it to Usage cache db
+	//Get usage for last 3 days add it to Usage cache db -- Getting cost of current day is not accurate and better to keep updating it for the next 3 days
 	currentTime := time.Now()
-	todayCostAmount := 0.0
-	usageEndTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 23, 59, 59, 0, time.UTC)
 
-	for i := -4; i < 1; i++ {
+	for i := 0; i < 3; i++ {
 
-		usageStartTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, i)
-		usageEndTime = time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 23, 59, 59, 0, time.UTC).AddDate(0, 0, i)
+		todayCostAmount := 0.0
+
+		usageStartTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, -i)
+		usageEndTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 23, 59, 59, 0, time.UTC).AddDate(0, 0, -i)
 
 		log.Printf("usageStart: %d and usageEnd :%d", usageStartTime.Unix(), usageEndTime.Unix())
 
@@ -79,26 +79,17 @@ func calculateLeaseSpend(input *calculateSpendInput) (float64, error) {
 	}
 
 	// Budget period starts last time the lease was reset.
-	// We can look at the `leaseStatusModifiedOn` to know
+	// We can look at the `leaseStatusCreatedOn` to know
 	// when the lease status changed from `ResetLock` --> `Active`
-	budgetStartTime := time.Unix(input.lease.LeaseStatusModifiedOn, 0)
-	currentDate := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC)
-	budgetStartDate := time.Date(budgetStartTime.Year(), budgetStartTime.Month(), budgetStartTime.Day(), 0, 0, 0, 0, time.UTC)
+	budgetStartTime := time.Unix(input.lease.CreatedOn, 0)
 
-	// budget's `endTime` is set to yesterday
-	budgetEndTime := usageEndTime.AddDate(0, 0, -1)
+	// budget's `endTime` is when the lease end
+	budgetEndTime := time.Unix(input.lease.ExpiresOn, 0)
 
-	if currentDate.Sub(budgetStartDate) <= 0 {
-		log.Printf("Retrieving usage for lease %s @ %s for period %s to %s...",
-			input.lease.PrincipalID, input.lease.AccountID,
-			budgetStartTime.Format("2006-01-02"), usageEndTime.Format("2006-01-02"),
-		)
-	} else {
-		log.Printf("Retrieving usage for lease %s @ %s for period %s to %s...",
-			input.lease.PrincipalID, input.lease.AccountID,
-			budgetStartTime.Format("2006-01-02"), budgetEndTime.Format("2006-01-02"),
-		)
-	}
+	log.Printf("Retrieving usage for lease %s @ %s for period %s to %s...",
+		input.lease.PrincipalID, input.lease.AccountID,
+		budgetStartTime.Format("2006-01-02"), budgetEndTime.Format("2006-01-02"),
+	)
 
 	// Query Usage cache DB
 	usageRecords, err := input.usageSvc.GetUsageByDateRange(budgetStartTime, budgetEndTime)
@@ -106,8 +97,7 @@ func calculateLeaseSpend(input *calculateSpendInput) (float64, error) {
 		return 0, errors.Wrapf(err, "Failed to retrieve usage for account %s", input.lease.AccountID)
 	}
 
-	// DynDB is eventually consistent. Pull cache DB for SUN-->yesterday, then add the known value for today
-	spend := todayCostAmount
+	spend := 0.0
 	for _, usage := range usageRecords {
 		log.Printf("usage records retrieved: %v", usage)
 		if *usage.PrincipalID == input.lease.PrincipalID && *usage.AccountID == input.lease.AccountID {

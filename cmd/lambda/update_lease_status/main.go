@@ -145,7 +145,7 @@ func lambdaHandler(input *lambdaHandlerInput) error {
 		return errors.Wrapf(err, "Failed to lookup account for lease %s", leaseLogID)
 	}
 	if account == nil {
-		return fmt.Errorf("Account %s does not exist for principal %s",
+		return fmt.Errorf("account %s does not exist for principal %s",
 			input.lease.AccountID, input.lease.PrincipalID)
 	}
 
