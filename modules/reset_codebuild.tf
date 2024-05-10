@@ -118,6 +118,12 @@ resource "aws_codebuild_project" "reset_build" {
       value = aws_sns_topic.reset_complete.arn
       type  = "PLAINTEXT"
     }
+
+    environment_variable {
+      name  = "RESET_FAILED_TOPIC_ARN"
+      value = aws_sns_topic.reset_failed.arn
+      type  = "PLAINTEXT"
+    }
   }
 
   tags = var.global_tags
@@ -223,6 +229,12 @@ resource "aws_cloudwatch_metric_alarm" "reset_failed_builds" {
 
 resource "aws_sns_topic" "reset_complete" {
   name              = "account-reset-complete-${var.namespace}"
+  kms_master_key_id = local.sns_encryption_key_id
+  tags              = var.global_tags
+}
+
+resource "aws_sns_topic" "reset_failed" {
+  name              = "account-reset-failed-${var.namespace}"
   kms_master_key_id = local.sns_encryption_key_id
   tags              = var.global_tags
 }
