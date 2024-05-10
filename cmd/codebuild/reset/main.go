@@ -155,7 +155,7 @@ func nukeAccount(svc *service, isDryRun bool) error {
 	return nil
 }
 
-func notifyAccountResetFailed(dbSvc db.DBer, snsSvc common.Notificationer, snsTopic string, childAccountId string) error {
+func notifyAccountResetFailed(dbSvc db.DBer, snsSvc common.Notificationer, childAccountId string, snsTopic string) error {
 
 	account, err_get := dbSvc.GetAccount(childAccountId)
 	if err_get != nil {
