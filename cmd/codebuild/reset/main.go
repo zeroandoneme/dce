@@ -43,7 +43,11 @@ func main() {
 		)
 		if err != nil {
 			log.Fatalf("Failed to execute aws-nuke on account %s: %s\n", config.childAccountID, err)
-			err = notifyAccountResetFailed(svc.db(), svc.snsService(), config.childAccountID, common.RequireEnv("RESET_FAILED_TOPIC_ARN"))
+			err_notify := notifyAccountResetFailed(svc.db(), svc.snsService(), config.childAccountID, common.RequireEnv("RESET_FAILED_TOPIC_ARN"))
+
+			if err_notify != nil {
+				log.Fatalf("Failed notify acccount reset failed  ")
+			}
 		}
 		log.Printf("%s  :  Nuke Success\n", config.childAccountID)
 	} else {
