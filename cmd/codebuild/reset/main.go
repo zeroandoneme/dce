@@ -43,6 +43,7 @@ func main() {
 		)
 		if err != nil {
 			log.Fatalf("Failed to execute aws-nuke on account %s: %s\n", config.childAccountID, err)
+			log.Printf("Notifying Account Reset Failed for: %s", config.childAccountID)
 			err_notify := notifyAccountResetFailed(svc.db(), svc.snsService(), config.childAccountID, common.RequireEnv("RESET_FAILED_TOPIC_ARN"))
 
 			if err_notify != nil {
@@ -165,7 +166,6 @@ func notifyAccountResetFailed(dbSvc db.DBer, snsSvc common.Notificationer, child
 	if err_get != nil {
 		return err_get
 	}
-	log.Printf("Notifying Reset Topic that the account reset  failed for: %s", childAccountId)
 
 	snsMessage, error_msg := common.PrepareSNSMessageJSON(account)
 	if error_msg != nil {
