@@ -42,13 +42,14 @@ func main() {
 			!config.isNukeEnabled,
 		)
 		if err != nil {
-			log.Fatalf("Failed to execute aws-nuke on account %s: %s\n", config.childAccountID, err)
 			log.Printf("Notifying Account Reset Failed for: %s", config.childAccountID)
 			err_notify := notifyAccountResetFailed(svc.db(), svc.snsService(), config.childAccountID, common.RequireEnv("RESET_FAILED_TOPIC_ARN"))
 
 			if err_notify != nil {
-				log.Fatalf("Failed notify acccount reset failed  ")
+				log.Printf("Failed notify acccount reset failed  ")
 			}
+			log.Fatalf("Failed to execute aws-nuke on account %s: %s\n", config.childAccountID, err)
+
 		}
 		log.Printf("%s  :  Nuke Success\n", config.childAccountID)
 	} else {
@@ -175,7 +176,7 @@ func notifyAccountResetFailed(dbSvc db.DBer, snsSvc common.Notificationer, child
 
 	_, err_publish := snsSvc.PublishMessage(aws.String(snsTopic), aws.String(snsMessage), true)
 	if err_publish != nil {
-		log.Print("Issue in publishing message: %s" + err_publish.Error())
+		log.Printf("Issue in publishing message: %s" + err_publish.Error())
 		return err_publish
 	}
 	return nil
