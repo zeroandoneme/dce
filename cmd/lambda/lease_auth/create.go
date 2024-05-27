@@ -32,8 +32,8 @@ type CreateController struct {
 func (controller CreateController) Call(ctx context.Context, req *events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
 	leaseID := req.PathParameters["id"]
-	principalEmail := req.Body
-	log.Printf("principalEmail : %s", principalEmail)
+	// principalEmail := req.Body
+	// log.Printf("principalEmail : %s", principalEmail)
 
 	// Get the Lease Information
 	lease, err := controller.Dao.GetLeaseByID(leaseID)
