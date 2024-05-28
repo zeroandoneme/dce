@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"strings"
 
 	"github.com/Optum/dce/pkg/api"
 	"github.com/Optum/dce/pkg/api/response"
@@ -28,14 +27,22 @@ type CreateController struct {
 	FederationURL string
 	UserDetailer  api.UserDetailer
 }
+type PrincipalInfo struct {
+	Email string `json:"email"`
+}
 
 // Call - function to return a specific AWS Lease record to the request
 func (controller CreateController) Call(ctx context.Context, req *events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
 	leaseID := req.PathParameters["id"]
-	principalEmail := strings.Trim(req.Body, "\"")
+	body := req.Body
 
-	log.Printf("principalEmail : %s", principalEmail)
+	var principal PrincipalInfo
+	err := json.Unmarshal([]byte(body), &principal)
+	if err != nil {
+		log.Printf("Rrror in decoding request body %s", err)
+	}
+	log.Printf("Principal Email : %s", principal.Email)
 
 	// Get the Lease Information
 	lease, err := controller.Dao.GetLeaseByID(leaseID)
@@ -88,7 +95,7 @@ func (controller CreateController) Call(ctx context.Context, req *events.APIGate
 	}
 	assumeRoleInputs := sts.AssumeRoleInput{
 		RoleArn:         &account.PrincipalRoleArn,
-		RoleSessionName: aws.String(fmt.Sprintf("%s_%s", roleSessionName, principalEmail)),
+		RoleSessionName: aws.String(fmt.Sprintf("%s_%s", roleSessionName, principal.Email)),
 		DurationSeconds: aws.Int64(14400),
 	}
 	assumeRoleOutput, err := controller.TokenService.AssumeRole(
