@@ -151,11 +151,13 @@ func (controller CreateController) getSigninToken(creds sts.Credentials) (string
 		AccessKeyID     string `json:"sessionId"`
 		SecretAccessKey string `json:"sessionKey"`
 		SessionToken    string `json:"sessionToken"`
+		DurationSeconds int    `json:"durationSeconds"`
 	}
 	credentialString, err := json.Marshal(&signinCredentialsInput{
 		AccessKeyID:     *creds.AccessKeyId,
 		SecretAccessKey: *creds.SecretAccessKey,
 		SessionToken:    *creds.SessionToken,
+		DurationSeconds: 14400,
 	})
 	if err != nil {
 		log.Printf("Error marshalling credentials: %s", err)
