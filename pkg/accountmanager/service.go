@@ -21,7 +21,7 @@ type ServiceConfig struct {
 	S3BucketName                string   `env:"ARTIFACTS_BUCKET" envDefault:"DefaultArtifactBucket"`
 	S3PolicyKey                 string   `env:"PRINCIPAL_POLICY_S3_KEY" envDefault:"DefaultPrincipalPolicyS3Key"`
 	PrincipalIAMDenyTags        []string `env:"PRINCIPAL_IAM_DENY_TAGS" envDefault:"DefaultPrincipalIamDenyTags"`
-	PrincipalMaxSessionDuration int64    `env:"PRINCIPAL_MAX_SESSION_DURATION" envDefault:"3600"` // 3600 is the default minimum value
+	PrincipalMaxSessionDuration int64    `env:"PRINCIPAL_MAX_SESSION_DURATION" envDefault:"14400"` // 3600 is the default minimum value
 	AllowedRegions              []string `env:"ALLOWED_REGIONS" envDefault:"us-east-1"`
 	TagEnvironment              string   `env:"TAG_ENVIRONMENT" envDefault:"DefaultTagEnvironment"`
 	TagContact                  string   `env:"TAG_CONTACT" envDefault:"DefaultTagContact"`
