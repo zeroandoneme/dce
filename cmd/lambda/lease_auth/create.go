@@ -96,7 +96,7 @@ func (controller CreateController) Call(ctx context.Context, req *events.APIGate
 	assumeRoleInputs := sts.AssumeRoleInput{
 		RoleArn:         &account.PrincipalRoleArn,
 		RoleSessionName: aws.String(fmt.Sprintf("%s_%s", roleSessionName, principal.Email)),
-		DurationSeconds: aws.Int64(14400),
+		// DurationSeconds: aws.Int64(14400),
 	}
 	assumeRoleOutput, err := controller.TokenService.AssumeRole(
 		&assumeRoleInputs,
