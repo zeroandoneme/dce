@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/Optum/dce/pkg/api"
 	"github.com/Optum/dce/pkg/api/response"
@@ -32,7 +33,8 @@ type CreateController struct {
 func (controller CreateController) Call(ctx context.Context, req *events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
 	leaseID := req.PathParameters["id"]
-	principalEmail := req.Body
+	principalEmail := strings.Trim(req.Body, "\"")
+
 	log.Printf("principalEmail : %s", principalEmail)
 
 	// Get the Lease Information
