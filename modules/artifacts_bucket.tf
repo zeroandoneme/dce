@@ -3,7 +3,7 @@ locals {
   artifact_bucket_name = "${local.account_id}-dce-artifacts-${var.namespace}"
 }
 
-
+#
 # Configure an S3 Bucket to hold artifacts
 # (eg. application code deployments, etc.)
 resource "aws_s3_bucket" "artifacts" {
