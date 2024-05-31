@@ -1,7 +1,7 @@
 locals {
   principal_policy     = var.principal_policy == "" ? "${path.module}/fixtures/policies/principal_policy.tmpl" : var.principal_policy
   artifact_bucket_name = "${local.account_id}-dce-artifacts-${var.namespace}"
-  bluepi_policies_object_path = "${path.module}/fixtures/bluepi_policies"
+  # bluepi_policies_object_path = "${path.module}/fixtures/bluepi_policies"
   # files_to_upload = [
   #   {
   #     source = "${local.bluepi_policies_object_path}/bluepi_policy_basic.tmpl"
