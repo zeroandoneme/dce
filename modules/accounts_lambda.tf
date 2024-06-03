@@ -1,7 +1,7 @@
 locals {
-  principal_role_name   = "DCEPrincipal${var.namespace == "prod" ? "" : "-${var.namespace}"}"
-  principal_policy_name = "DCEPrincipalDefaultPolicy${var.namespace == "prod" ? "" : "-${var.namespace}"}"
-  bluepi_role_json = jsonencode(var.bluepi_roles) 
+  principal_role_name     = "DCEPrincipal${var.namespace == "prod" ? "" : "-${var.namespace}"}"
+  principal_policy_name   = "DCEPrincipalDefaultPolicy${var.namespace == "prod" ? "" : "-${var.namespace}"}"
+  bluepi_role_json        = jsonencode(var.bluepi_roles)
   bluepi_policies_s3_path = "fixtures/policies"
 }
 
