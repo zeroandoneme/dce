@@ -359,7 +359,11 @@ func (p *principalService) buildPolicyBluepi(policy_name string, role_name strin
 		BluePiRoleArn        string
 	}
 	policy_s3_key := fmt.Sprintf("%s.%s", policy_name, "tmpl")
+	log.Printf("policy_s3_key :  %s", policy_s3_key)
+
 	bluepi_role_arn := fmt.Sprintf("arn:aws:iam::%s:role/%s", p.config.AccountID, role_name)
+	log.Printf("bluepi_role_arn :  %s", bluepi_role_arn)
+
 	policy, policyHash, err := p.storager.GetTemplateObject(p.config.S3BucketName, policy_s3_key,
 		principalPolicyInput{
 			PrincipalPolicyArn:   p.account.PrincipalPolicyArn.String(),
