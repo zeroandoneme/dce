@@ -260,3 +260,137 @@ func (p *principalService) deletePolicyVersion(version *iam.PolicyVersion) error
 	}
 	return nil
 }
+
+// bluepi added functionalities
+
+func (p *principalService) MergeRoleBluepi(role_name string) error {
+	log.Printf("MergeRoleBluepi")
+	_, err := p.iamSvc.CreateRole(&iam.CreateRoleInput{
+		RoleName:                 aws.String(role_name),
+		AssumeRolePolicyDocument: aws.String(p.config.assumeRolePolicy),
+		Description:              aws.String(p.config.PrincipalRoleDescription),
+		MaxSessionDuration:       aws.Int64(p.config.PrincipalMaxSessionDuration),
+		Tags: append(p.config.tags,
+			&iam.Tag{Key: aws.String("Name"), Value: aws.String("DCEPrincipal")},
+		),
+	})
+	if err != nil {
+		if isAWSAlreadyExistsError(err) {
+			log.Printf("%s: for account %q; ignoring", err.Error(), *p.account.ID)
+		} else {
+			return errors.NewInternalServer(fmt.Sprintf("unexpected error creating role %q", role_name), err)
+		}
+	}
+
+	return nil
+}
+
+func (p *principalService) MergePolicyBluepi(policy_name string, role_name string) error {
+	log.Printf("MergePolicyBluepi")
+
+	policy, policyHash, err := p.buildPolicyBluepi(policy_name, role_name)
+	if err != nil {
+		log.Printf("bluepi policy hash %s", *policyHash)
+		return err
+	}
+
+	// // if they match there is nothing to do
+	// // Added account ID to log messages to help troubleshoot which account is having error with updating principal policy.
+	// if p.account.PrincipalPolicyHash != nil {
+	// 	if *policyHash == *p.account.PrincipalPolicyHash {
+	// 		log.Printf("SKIP: For account %q, Policy Hash matches.  Old %q and New %q", *p.account.ID, *p.account.PrincipalPolicyHash, *policyHash)
+	// 		return nil
+	// 	}
+	// 	log.Printf("UPDATE: For account %q, Policy Hash doesn't match.  Old %q and New %q", *p.account.ID, *p.account.PrincipalPolicyHash, *policyHash)
+	// } else {
+	// 	log.Printf("UPDATE: For account %q, Old Policy Hash is null. New %q", *p.account.ID, *policyHash)
+	// }
+
+	_, err = p.iamSvc.CreatePolicy(&iam.CreatePolicyInput{
+		PolicyName:     aws.String(policy_name),
+		Description:    aws.String(p.config.PrincipalPolicyDescription),
+		PolicyDocument: policy,
+	})
+
+	if err != nil {
+		if isAWSAlreadyExistsError(err) {
+			log.Printf("%s: for account %q; ignoring", err.Error(), *p.account.ID)
+		} else {
+			return errors.NewInternalServer(fmt.Sprintf("unexpected error creating policy %s", policy_name), err)
+		}
+	} else {
+		// no error means we create the policy without issue moving on
+		//p.account.PrincipalPolicyHash = policyHash
+		return nil
+	}
+
+	// Prune old versions of the policy.  Making sure we have room for one more policy version
+	// err = p.prunePolicyVersions()
+	// if err != nil {
+	// 	return err
+	// }
+
+	// Create a new Policy Version and set as default
+	// _, err = p.iamSvc.CreatePolicyVersion(&iam.CreatePolicyVersionInput{
+	// 	PolicyArn:      aws.String(p.account.PrincipalPolicyArn.String()),
+	// 	PolicyDocument: policy,
+	// 	SetAsDefault:   aws.Bool(true),
+	// })
+
+	// p.account.PrincipalPolicyHash = policyHash
+	// if err != nil {
+	// 	return errors.NewInternalServer(fmt.Sprintf("unexpected error creating policy version %q", p.account.PrincipalPolicyArn.String()), err)
+	// }
+
+	return nil
+}
+
+func (p *principalService) buildPolicyBluepi(policy_name string, role_name string) (*string, *string, error) {
+
+	type principalPolicyInput struct {
+		PrincipalPolicyArn   string
+		PrincipalRoleArn     string
+		PrincipalIAMDenyTags []string
+		AdminRoleArn         string
+		Regions              []string
+		BluePiRoleArn        string
+	}
+	policy_s3_key := fmt.Sprintf("%s.%s", policy_name, "tmpl")
+	bluepi_role_arn := fmt.Sprintf("arn:aws:iam::%s:role/%s", p.config.AccountID, role_name)
+	policy, policyHash, err := p.storager.GetTemplateObject(p.config.S3BucketName, policy_s3_key,
+		principalPolicyInput{
+			PrincipalPolicyArn:   p.account.PrincipalPolicyArn.String(),
+			PrincipalRoleArn:     p.account.PrincipalRoleArn.String(),
+			PrincipalIAMDenyTags: p.config.PrincipalIAMDenyTags,
+			AdminRoleArn:         p.account.AdminRoleArn.String(),
+			Regions:              p.config.AllowedRegions,
+			BluePiRoleArn:        bluepi_role_arn,
+		})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &policy, &policyHash, nil
+}
+
+func (p *principalService) AttachRoleWithPolicyBluepi(role_name string, policy_name string) error {
+
+	bluepi_policy_arn := fmt.Sprintf("arn:aws:iam::%s:policy/%s", p.config.AccountID, policy_name)
+
+	// Attach the policy to the role
+	_, err := p.iamSvc.AttachRolePolicy(&iam.AttachRolePolicyInput{
+		PolicyArn: aws.String(bluepi_policy_arn),
+		RoleName:  aws.String(role_name),
+	})
+	if err != nil {
+		if isAWSAlreadyExistsError(err) {
+			log.Printf("%s: for account %q; ignoring", err.Error(), *p.account.ID)
+		} else {
+			return errors.NewInternalServer(
+				fmt.Sprintf("unexpected error attaching policy %q to role %q", bluepi_policy_arn, role_name),
+				err)
+		}
+	}
+
+	return nil
+}

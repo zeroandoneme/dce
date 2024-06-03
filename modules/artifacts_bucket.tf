@@ -1,7 +1,7 @@
 locals {
   principal_policy     = var.principal_policy == "" ? "${path.module}/fixtures/policies/principal_policy.tmpl" : var.principal_policy
   artifact_bucket_name = "${local.account_id}-dce-artifacts-${var.namespace}"
-  bluepi_policies_path = "${path.module}/fixtures/policies"
+  bluepi_policies_local_path = "${path.module}/fixtures/policies"
 }
 
 
@@ -69,8 +69,8 @@ resource "aws_s3_bucket_object" "principal_policy" {
 resource "aws_s3_bucket_object" "bluepi_policy_basic" {
   bucket = aws_s3_bucket.artifacts.id
   key    = "fixtures/policies/bluepi_policy_basic.tmpl"
-  source = "${local.bluepi_policies_path}/bluepi_policy_basic.tmpl"
-  etag   = filemd5("${local.bluepi_policies_path}/bluepi_policy_basic.tmpl")
+  source = "${local.bluepi_policies_local_path}/bluepi_policy_basic.tmpl"
+  etag   = filemd5("${local.bluepi_policies_local_path}/bluepi_policy_basic.tmpl")
 }
 
 
