@@ -33,9 +33,13 @@ accounts:
       IAMPolicy:
         - type: "contains"
           value: "{{ .PrincipalPolicy}}"
+        - type: "regex"
+          value: "^bluepi."
       IAMRole:
         - "{{ .AdminRole}}"
         - "{{ .PrincipalRole}}"
+        - type: "regex"
+          value: "^bluepi."
       IAMRolePolicy:
         - type: "contains"
           value: "{{ .AdminRole}}"
@@ -43,8 +47,12 @@ accounts:
           value: "{{ .PrincipalRole}}"
         - type: "contains"
           value: "{{ .PrincipalPolicy}}"
+        - type:  "regex"
+          value: "^bluepi.*"  
       IAMRolePolicyAttachment:
         # Do not remove the policy from the principal user role
         - "{{ .PrincipalRole}} -> {{ .PrincipalPolicy}}"
         - property: RoleName
           value: "{{ .AdminRole}}"
+        - type: "regex"
+          value: "^bluepi.*"  
