@@ -358,10 +358,10 @@ func (p *principalService) buildPolicyBluepi(policy_name string, role_name strin
 		Regions              []string
 		BluePiRoleArn        string
 	}
-	policy_s3_key := fmt.Sprintf("%s.%s", policy_name, "tmpl")
+	policy_s3_key := fmt.Sprintf("fixtures/policies/%s.%s", policy_name, "tmpl")
 	log.Printf("policy_s3_key :  %s", policy_s3_key)
 
-	bluepi_role_arn := fmt.Sprintf("arn:aws:iam::%s:role/%s", p.config.AccountID, role_name)
+	bluepi_role_arn := fmt.Sprintf("arn:aws:iam::%s:role/%s", *p.account.ID, role_name)
 	log.Printf("bluepi_role_arn :  %s", bluepi_role_arn)
 
 	policy, policyHash, err := p.storager.GetTemplateObject(p.config.S3BucketName, policy_s3_key,
@@ -383,7 +383,7 @@ func (p *principalService) buildPolicyBluepi(policy_name string, role_name strin
 func (p *principalService) AttachRoleWithPolicyBluepi(role_name string, policy_name string) error {
 
 	log.Printf("AttachRoleWithPolicyBluepi")
-	bluepi_policy_arn := fmt.Sprintf("arn:aws:iam::%s:policy/%s", p.config.AccountID, policy_name)
+	bluepi_policy_arn := fmt.Sprintf("arn:aws:iam::%s:policy/%s", *p.account.ID, policy_name)
 	log.Printf("bluepi_policy_arn : %s", bluepi_policy_arn)
 
 	// Attach the policy to the role
