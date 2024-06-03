@@ -288,9 +288,9 @@ func (p *principalService) MergeRoleBluepi(role_name string) error {
 func (p *principalService) MergePolicyBluepi(policy_name string, role_name string) error {
 	log.Printf("MergePolicyBluepi")
 
-	policy, policyHash, err := p.buildPolicyBluepi(policy_name, role_name)
+	policy, _, err := p.buildPolicyBluepi(policy_name, role_name)
 	if err != nil {
-		log.Printf("bluepi policy hash %s", *policyHash)
+		log.Printf("Error in Building policy : %s", err)
 		return err
 	}
 
@@ -346,6 +346,9 @@ func (p *principalService) MergePolicyBluepi(policy_name string, role_name strin
 }
 
 func (p *principalService) buildPolicyBluepi(policy_name string, role_name string) (*string, *string, error) {
+	log.Printf("MergePolicyBluepi")
+	log.Printf("Policy Name :  %s", policy_name)
+	log.Printf("Role Name:  %s", role_name)
 
 	type principalPolicyInput struct {
 		PrincipalPolicyArn   string
@@ -375,7 +378,9 @@ func (p *principalService) buildPolicyBluepi(policy_name string, role_name strin
 
 func (p *principalService) AttachRoleWithPolicyBluepi(role_name string, policy_name string) error {
 
+	log.Printf("AttachRoleWithPolicyBluepi")
 	bluepi_policy_arn := fmt.Sprintf("arn:aws:iam::%s:policy/%s", p.config.AccountID, policy_name)
+	log.Printf("bluepi_policy_arn : %s", bluepi_policy_arn)
 
 	// Attach the policy to the role
 	_, err := p.iamSvc.AttachRolePolicy(&iam.AttachRolePolicyInput{
