@@ -347,8 +347,6 @@ func (p *principalService) MergePolicyBluepi(policy_name string, role_name strin
 
 func (p *principalService) buildPolicyBluepi(policy_name string, role_name string) (*string, *string, error) {
 	log.Printf("buildPolicyBluepi")
-	log.Printf("Policy Name :  %s", policy_name)
-	log.Printf("Role Name:  %s", role_name)
 
 	type principalPolicyInput struct {
 		PrincipalPolicyArn   string
@@ -363,10 +361,6 @@ func (p *principalService) buildPolicyBluepi(policy_name string, role_name strin
 	policy_s3_key := fmt.Sprintf("fixtures/policies/%s.%s", policy_name, "tmpl")
 	bluepi_role_arn := fmt.Sprintf("arn:aws:iam::%s:role/%s", *p.account.ID, role_name)
 	bluepi_policy_arn := fmt.Sprintf("arn:aws:iam::%s:policy/%s", *p.account.ID, policy_name)
-
-	log.Printf("policy_s3_key :  %s", policy_s3_key)
-	log.Printf("bluepi_role_arn :  %s", bluepi_role_arn)
-	log.Printf("bluepi_policy_arn :  %s", bluepi_policy_arn)
 
 	policy, policyHash, err := p.storager.GetTemplateObject(p.config.S3BucketName, policy_s3_key,
 		principalPolicyInput{
@@ -389,7 +383,6 @@ func (p *principalService) AttachRoleWithPolicyBluepi(role_name string, policy_n
 
 	log.Printf("AttachRoleWithPolicyBluepi")
 	bluepi_policy_arn := fmt.Sprintf("arn:aws:iam::%s:policy/%s", *p.account.ID, policy_name)
-	log.Printf("bluepi_policy_arn : %s", bluepi_policy_arn)
 
 	// Attach the policy to the role
 	_, err := p.iamSvc.AttachRolePolicy(&iam.AttachRolePolicyInput{
