@@ -99,6 +99,8 @@ func (s *Service) UpsertPrincipalAccess(account *account.Account) error {
 		err = principalSvc.MergePolicyBluepi(role.PolicyName, role.RoleName)
 		if err != nil {
 			log.Printf("Failed to create bluepi policy : %s", role.PolicyName)
+			fmt.Println("Policy creation error : ", err)
+
 		}
 
 		err = principalSvc.AttachRoleWithPolicyBluepi(role.RoleName, role.PolicyName)
