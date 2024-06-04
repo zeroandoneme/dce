@@ -31,6 +31,7 @@ accounts:
       - sso
     filters:
       IAMPolicy:
+        - "bluepi_policy_basic"
         - type: "contains"
           value: "{{ .PrincipalPolicy}}"
         - type: "regex"
@@ -54,8 +55,6 @@ accounts:
         - "{{ .PrincipalRole}} -> {{ .PrincipalPolicy}}"
         - property: RoleName
           value: "{{ .AdminRole}}"
-        - type: "regex"
-          value: "^bluepi*"
         - type: "regex"
           value: "^bluepi.*" # Deny removal of role-policy attachments where role starts with "bluepi"
         - type: "regex"
