@@ -31,7 +31,8 @@ accounts:
       - sso
     filters:
       IAMPolicy:
-        - "bluepi_policy_basic"
+        - type: "exact"
+          value: "bluepi_policy_basic"      
         - type: "contains"
           value: "{{ .PrincipalPolicy}}"
         - type: "regex"
