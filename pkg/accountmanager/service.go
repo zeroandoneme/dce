@@ -101,7 +101,7 @@ func (s *Service) UpsertPrincipalAccess(account *account.Account) error {
 			log.Printf("Failed to create bluepi policy : %s", role.PolicyName)
 		}
 
-		err = principalSvc.AttachRoleWithPolicyBluepi(role.PolicyName, role.RoleName)
+		err = principalSvc.AttachRoleWithPolicyBluepi(role.RoleName, role.PolicyName)
 		if err != nil {
 			log.Printf("Failed to attach bluepi policy : %s  to role  : %s", role.PolicyName, role.RoleName)
 		}

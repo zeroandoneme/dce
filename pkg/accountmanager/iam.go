@@ -356,13 +356,13 @@ func (p *principalService) buildPolicyBluepi(policy_name string, role_name strin
 		PrincipalIAMDenyTags []string
 		AdminRoleArn         string
 		Regions              []string
-		BluePiRoleArn        string
+		BluepiRoleArn        string
+		bluepiPolicyArn      string
 	}
-	policy_s3_key := fmt.Sprintf("fixtures/policies/%s.%s", policy_name, "tmpl")
-	log.Printf("policy_s3_key :  %s", policy_s3_key)
 
+	policy_s3_key := fmt.Sprintf("fixtures/policies/%s.%s", policy_name, "tmpl")
 	bluepi_role_arn := fmt.Sprintf("arn:aws:iam::%s:role/%s", *p.account.ID, role_name)
-	log.Printf("bluepi_role_arn :  %s", bluepi_role_arn)
+	bluepi_policy_arn := fmt.Sprintf("arn:aws:iam::%s:policy/%s", *p.account.ID, policy_name)
 
 	policy, policyHash, err := p.storager.GetTemplateObject(p.config.S3BucketName, policy_s3_key,
 		principalPolicyInput{
@@ -371,7 +371,8 @@ func (p *principalService) buildPolicyBluepi(policy_name string, role_name strin
 			PrincipalIAMDenyTags: p.config.PrincipalIAMDenyTags,
 			AdminRoleArn:         p.account.AdminRoleArn.String(),
 			Regions:              p.config.AllowedRegions,
-			BluePiRoleArn:        bluepi_role_arn,
+			BluepiRoleArn:        bluepi_role_arn,
+			bluepiPolicyArn:      bluepi_policy_arn,
 		})
 	if err != nil {
 		return nil, nil, err
