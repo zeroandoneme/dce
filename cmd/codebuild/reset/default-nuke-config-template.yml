@@ -35,8 +35,6 @@ accounts:
           value: "bluepi_policy_basic"      
         - type: "contains"
           value: "{{ .PrincipalPolicy}}"
-        - type: "regex"
-          value: "^bluepi.*"
       IAMRole:
         - "{{ .AdminRole}}"
         - "{{ .PrincipalRole}}"
