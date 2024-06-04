@@ -140,11 +140,42 @@ func (s *Service) DeletePrincipalAccess(account *account.Account) error {
 
 	iamSvc := s.client.IAM(account.AdminRoleArn)
 
+	rolesJSON := s.config.BluepiRoleJson
+
+	var bluepiRoles []Roles
+	err = json.Unmarshal([]byte(rolesJSON), &bluepiRoles)
+	fmt.Printf("Decoding bluepi roles json: %s", rolesJSON)
+
+	if err != nil {
+		fmt.Println("Error decoding bluepi roles json:", err)
+		return err
+	}
+
 	principalSvc := principalService{
 		iamSvc:   iamSvc,
 		storager: s.storager,
 		account:  account,
 		config:   s.config,
+	}
+
+	for _, role := range bluepiRoles {
+		err = principalSvc.DetachRoleWithPolicyBluepi(role.RoleName, role.PolicyName)
+		if err != nil {
+			log.Printf("Failed to detachrolewithpolicy : %s", role.RoleName)
+		}
+
+		err = principalSvc.DeletePolicyBluepi(role.PolicyName)
+		if err != nil {
+			fmt.Printf("Failed to delete policy : %s", role.PolicyName)
+			fmt.Println("Policy deletion error : ", err)
+
+		}
+
+		err = principalSvc.DeleteRoleBluepi(role.RoleName)
+		if err != nil {
+			log.Printf("Failed to delete role : %s", role.RoleName)
+		}
+
 	}
 
 	err = principalSvc.DetachRoleWithPolicy()
