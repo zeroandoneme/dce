@@ -31,8 +31,8 @@ accounts:
       - sso
     filters:
       IAMPolicy:
-        - type: "contains"
-          value: "bluepi_policy_basic"      
+        - type: "regex"
+          value: ".*bluepi.*" 
         - type: "contains"
           value: "{{ .PrincipalPolicy}}"
       IAMRole:
