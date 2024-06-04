@@ -325,22 +325,24 @@ func (p *principalService) MergePolicyBluepi(policy_name string, role_name strin
 	}
 
 	// Prune old versions of the policy.  Making sure we have room for one more policy version
-	// err = p.prunePolicyVersions()
-	// if err != nil {
-	// 	return err
-	// }
+	err = p.prunePolicyVersionsBluepi(policy_name)
+	if err != nil {
+		return err
+	}
+
+	bluepi_policy_arn := fmt.Sprintf("arn:aws:iam::%s:policy/%s", *p.account.ID, policy_name)
 
 	// Create a new Policy Version and set as default
-	// _, err = p.iamSvc.CreatePolicyVersion(&iam.CreatePolicyVersionInput{
-	// 	PolicyArn:      aws.String(p.account.PrincipalPolicyArn.String()),
-	// 	PolicyDocument: policy,
-	// 	SetAsDefault:   aws.Bool(true),
-	// })
+	_, err = p.iamSvc.CreatePolicyVersion(&iam.CreatePolicyVersionInput{
+		PolicyArn:      aws.String(bluepi_policy_arn),
+		PolicyDocument: policy,
+		SetAsDefault:   aws.Bool(true),
+	})
 
 	// p.account.PrincipalPolicyHash = policyHash
-	// if err != nil {
-	// 	return errors.NewInternalServer(fmt.Sprintf("unexpected error creating policy version %q", p.account.PrincipalPolicyArn.String()), err)
-	// }
+	if err != nil {
+		return errors.NewInternalServer(fmt.Sprintf("unexpected error creating policy version %q", p.account.PrincipalPolicyArn.String()), err)
+	}
 
 	return nil
 }
@@ -395,6 +397,124 @@ func (p *principalService) AttachRoleWithPolicyBluepi(role_name string, policy_n
 		} else {
 			return errors.NewInternalServer(
 				fmt.Sprintf("unexpected error attaching policy %q to role %q", bluepi_policy_arn, role_name),
+				err)
+		}
+	}
+
+	return nil
+}
+
+func (p *principalService) prunePolicyVersionsBluepi(policy_name string) error {
+	bluepi_policy_arn := fmt.Sprintf("arn:aws:iam::%s:policy/%s", *p.account.ID, policy_name)
+	versions, err := p.iamSvc.ListPolicyVersions(&iam.ListPolicyVersionsInput{
+		PolicyArn: aws.String(bluepi_policy_arn),
+	})
+	if err != nil {
+		return errors.NewInternalServer(fmt.Sprintf("unexpected error listing policy versions on %q", p.account.PrincipalPolicyArn.String()), err)
+	}
+	if len(versions.Versions) < 5 && len(versions.Versions) > 1 {
+		return nil
+	}
+
+	var oldestVersion *iam.PolicyVersion
+
+	for _, version := range versions.Versions {
+		if *version.IsDefaultVersion {
+			continue
+		}
+		if oldestVersion == nil ||
+			version.CreateDate.Before(*oldestVersion.CreateDate) {
+			oldestVersion = version
+		}
+
+	}
+
+	if oldestVersion != nil {
+		return p.deletePolicyVersionBluepi(oldestVersion, bluepi_policy_arn)
+	}
+
+	return nil
+}
+
+func (p *principalService) deletePolicyVersionBluepi(version *iam.PolicyVersion, policy_arn string) error {
+	request := &iam.DeletePolicyVersionInput{
+		PolicyArn: aws.String(policy_arn),
+		VersionId: version.VersionId,
+	}
+
+	_, err := p.iamSvc.DeletePolicyVersion(request)
+	if err != nil {
+		return errors.NewInternalServer(
+			fmt.Sprintf("unexpected error deleting policy version %q on policy %q", *version.VersionId, p.account.PrincipalPolicyArn.String()),
+			err,
+		)
+	}
+	return nil
+}
+
+func (p *principalService) DeleteRoleBluepi(role_name string) error {
+
+	_, err := p.iamSvc.DeleteRole(&iam.DeleteRoleInput{
+		RoleName: aws.String(role_name),
+	})
+	if err != nil {
+		if isAWSNoSuchEntityError(err) {
+			log.Printf("%s: for account %q; ignoring", err.Error(), *p.account.ID)
+		} else {
+			return errors.NewInternalServer(fmt.Sprintf("unexpected error deleting the role %q", role_name), err)
+		}
+	}
+
+	return nil
+}
+
+func (p *principalService) DeletePolicyBluepi(policy_name string) error {
+	bluepi_policy_arn := fmt.Sprintf("arn:aws:iam::%s:policy/%s", *p.account.ID, policy_name)
+	versions, err := p.iamSvc.ListPolicyVersions(&iam.ListPolicyVersionsInput{
+		PolicyArn: aws.String(bluepi_policy_arn),
+	})
+	if err != nil {
+		return errors.NewInternalServer(fmt.Sprintf("unexpected error listing policy versions on %q", bluepi_policy_arn), err)
+	}
+	for _, version := range versions.Versions {
+		if !*version.IsDefaultVersion {
+			err = p.deletePolicyVersionBluepi(version, bluepi_policy_arn)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	_, err = p.iamSvc.DeletePolicy(&iam.DeletePolicyInput{
+		PolicyArn: aws.String(bluepi_policy_arn),
+	})
+
+	if err != nil {
+		if isAWSNoSuchEntityError(err) {
+			log.Printf("%s: for account %q; ignoring", err.Error(), *p.account.ID)
+		} else {
+			return errors.NewInternalServer(fmt.Sprintf("unexpected error deleting the policy %q", bluepi_policy_arn), err)
+		}
+	}
+
+	return nil
+}
+
+func (p *principalService) DetachRoleWithPolicyBluepi(role_name string, policy_name string) error {
+
+	bluepi_role_arn := fmt.Sprintf("arn:aws:iam::%s:role/%s", *p.account.ID, role_name)
+	bluepi_policy_arn := fmt.Sprintf("arn:aws:iam::%s:policy/%s", *p.account.ID, policy_name)
+	// Detach the policy to the role
+	_, err := p.iamSvc.DetachRolePolicy(&iam.DetachRolePolicyInput{
+		PolicyArn: aws.String(bluepi_policy_arn),
+		RoleName:  aws.String(role_name),
+	})
+	if err != nil {
+		if isAWSNoSuchEntityError(err) {
+			log.Printf("%s: for account %q; ignoring", err.Error(), *p.account.ID)
+		} else {
+			return errors.NewInternalServer(
+				fmt.Sprintf("unexpected error detaching policy %q from role %q", bluepi_policy_arn, bluepi_role_arn),
 				err)
 		}
 	}
