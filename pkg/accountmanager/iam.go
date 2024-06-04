@@ -357,7 +357,7 @@ func (p *principalService) buildPolicyBluepi(policy_name string, role_name strin
 		AdminRoleArn         string
 		Regions              []string
 		BluepiRoleArn        string
-		bluepiPolicyArn      string
+		BluepiPolicyArn      string
 	}
 
 	policy_s3_key := fmt.Sprintf("fixtures/policies/%s.%s", policy_name, "tmpl")
@@ -372,7 +372,7 @@ func (p *principalService) buildPolicyBluepi(policy_name string, role_name strin
 			AdminRoleArn:         p.account.AdminRoleArn.String(),
 			Regions:              p.config.AllowedRegions,
 			BluepiRoleArn:        bluepi_role_arn,
-			bluepiPolicyArn:      bluepi_policy_arn,
+			BluepiPolicyArn:      bluepi_policy_arn,
 		})
 	if err != nil {
 		return nil, nil, err
