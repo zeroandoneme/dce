@@ -91,11 +91,6 @@ func (s *Service) UpsertPrincipalAccess(account *account.Account) error {
 	}
 
 	for _, role := range bluepiRoles {
-		err = principalSvc.MergeRoleBluepi(role.RoleName)
-		if err != nil {
-			log.Printf("Failed to create bluepi role : %s", role.RoleName)
-		}
-
 		err = principalSvc.DetachRoleWithPolicyBluepi(role.RoleName, role.PolicyName)
 
 		if err != nil {
