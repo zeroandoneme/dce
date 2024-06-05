@@ -288,7 +288,7 @@ func (p *principalService) MergeRoleBluepi(role_name string) error {
 func (p *principalService) MergePolicyBluepi(policy_name string, role_name string) error {
 	log.Printf("MergePolicyBluepi")
 
-	policy, _, err := p.buildPolicyBluepi(policy_name, role_name)
+	policy, _, err := p.buildPolicyBluepi(policy_name)
 	if err != nil {
 		log.Printf("Error in Building policy : %s", err)
 		return err
@@ -347,7 +347,7 @@ func (p *principalService) MergePolicyBluepi(policy_name string, role_name strin
 	return nil
 }
 
-func (p *principalService) buildPolicyBluepi(policy_name string, role_name string) (*string, *string, error) {
+func (p *principalService) buildPolicyBluepi(policy_name string) (*string, *string, error) {
 	log.Printf("buildPolicyBluepi")
 
 	type principalPolicyInput struct {
@@ -356,13 +356,14 @@ func (p *principalService) buildPolicyBluepi(policy_name string, role_name strin
 		PrincipalIAMDenyTags []string
 		AdminRoleArn         string
 		Regions              []string
-		BluepiRoleArn        string
-		BluepiPolicyArn      string
+		ChildAccountId       string
+		// BluepiRoleArn        string
+		// BluepiPolicyArn      string
 	}
 
-	policy_s3_key := fmt.Sprintf("fixtures/policies/%s.%s", policy_name, "tmpl")
-	bluepi_role_arn := fmt.Sprintf("arn:aws:iam::%s:role/%s", *p.account.ID, role_name)
-	bluepi_policy_arn := fmt.Sprintf("arn:aws:iam::%s:policy/%s", *p.account.ID, policy_name)
+	policy_s3_key := fmt.Sprintf("%s/%s.%s", p.config.BluepiPoliciesPath, policy_name, "tmpl")
+	// bluepi_role_arn := fmt.Sprintf("arn:aws:iam::%s:role/%s", *p.account.ID, role_name)
+	// bluepi_policy_arn := fmt.Sprintf("arn:aws:iam::%s:policy/%s", *p.account.ID, policy_name)
 
 	policy, policyHash, err := p.storager.GetTemplateObject(p.config.S3BucketName, policy_s3_key,
 		principalPolicyInput{
@@ -371,8 +372,9 @@ func (p *principalService) buildPolicyBluepi(policy_name string, role_name strin
 			PrincipalIAMDenyTags: p.config.PrincipalIAMDenyTags,
 			AdminRoleArn:         p.account.AdminRoleArn.String(),
 			Regions:              p.config.AllowedRegions,
-			BluepiRoleArn:        bluepi_role_arn,
-			BluepiPolicyArn:      bluepi_policy_arn,
+			ChildAccountId:       *p.account.ID,
+			// BluepiRoleArn:        bluepi_role_arn,
+			// BluepiPolicyArn:      bluepi_policy_arn,
 		})
 	if err != nil {
 		return nil, nil, err
