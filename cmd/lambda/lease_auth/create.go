@@ -107,7 +107,7 @@ func (controller CreateController) Call(ctx context.Context, req *events.APIGate
 		}
 
 	}
-	log.Printf("Assuming Role: %s", *assumeRoleInputs.RoleArn)
+	log.Printf("Assuming Role : %s", *assumeRoleInputs.RoleArn)
 
 	assumeRoleOutput, err := controller.TokenService.AssumeRole(
 		&assumeRoleInputs,
