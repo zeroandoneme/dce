@@ -357,13 +357,9 @@ func (p *principalService) buildPolicyBluepi(policy_name string) (*string, *stri
 		AdminRoleArn         string
 		Regions              []string
 		ChildAccountId       string
-		// BluepiRoleArn        string
-		// BluepiPolicyArn      string
 	}
 
 	policy_s3_key := fmt.Sprintf("%s/%s.%s", p.config.BluepiPoliciesPath, policy_name, "tmpl")
-	// bluepi_role_arn := fmt.Sprintf("arn:aws:iam::%s:role/%s", *p.account.ID, role_name)
-	// bluepi_policy_arn := fmt.Sprintf("arn:aws:iam::%s:policy/%s", *p.account.ID, policy_name)
 
 	policy, policyHash, err := p.storager.GetTemplateObject(p.config.S3BucketName, policy_s3_key,
 		principalPolicyInput{
@@ -373,8 +369,6 @@ func (p *principalService) buildPolicyBluepi(policy_name string) (*string, *stri
 			AdminRoleArn:         p.account.AdminRoleArn.String(),
 			Regions:              p.config.AllowedRegions,
 			ChildAccountId:       *p.account.ID,
-			// BluepiRoleArn:        bluepi_role_arn,
-			// BluepiPolicyArn:      bluepi_policy_arn,
 		})
 	if err != nil {
 		return nil, nil, err
