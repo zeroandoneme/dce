@@ -40,7 +40,7 @@ func (controller CreateController) Call(ctx context.Context, req *events.APIGate
 	var principal PrincipalInfo
 	err := json.Unmarshal([]byte(body), &principal)
 	if err != nil {
-		log.Printf("Rrror in decoding request body %s", err)
+		log.Printf("Error in decoding request body %s", err)
 	}
 	log.Printf("Principal Email : %s", principal.Email)
 
