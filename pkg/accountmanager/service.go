@@ -91,6 +91,7 @@ func (s *Service) UpsertPrincipalAccess(account *account.Account) error {
 	}
 
 	for _, role := range bluepiRoles {
+
 		err = principalSvc.DetachRoleWithPolicyBluepi(role.RoleName, role.PolicyName)
 
 		if err != nil {
@@ -98,12 +99,18 @@ func (s *Service) UpsertPrincipalAccess(account *account.Account) error {
 			fmt.Println("")
 			fmt.Println("Policy deatach error : ", err)
 
-		}
-		err = principalSvc.DeletePolicyBluepi(role.PolicyName)
+		} else {
+			err = principalSvc.DeletePolicyBluepi(role.PolicyName)
 
-		if err != nil {
-			fmt.Printf("Failed to delete policy %s ", role.PolicyName)
-			fmt.Println("Policy deletion error : ", err)
+			if err != nil {
+				fmt.Printf("Failed to delete policy %s ", role.PolicyName)
+				fmt.Println("Policy deletion error : ", err)
+
+			}
+			err = principalSvc.DeleteRoleBluepi(role.RoleName)
+			if err != nil {
+				log.Printf("Failed to delete role : %s", role.RoleName)
+			}
 
 		}
 
