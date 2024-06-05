@@ -1,8 +1,8 @@
 locals {
-  principal_policy           = var.principal_policy == "" ? "${path.module}/fixtures/policies/principal_policy.tmpl" : var.principal_policy
-  artifact_bucket_name       = "${local.account_id}-dce-artifacts-${var.namespace}"
-  bluepi_policies_local_path = "${path.module}/fixtures/policies"
-  bluepi_policies_keys_prefix = "fixtures/policies" 
+  principal_policy            = var.principal_policy == "" ? "${path.module}/fixtures/policies/principal_policy.tmpl" : var.principal_policy
+  artifact_bucket_name        = "${local.account_id}-dce-artifacts-${var.namespace}"
+  bluepi_policies_local_path  = "${path.module}/fixtures/policies"
+  bluepi_policies_keys_prefix = "fixtures/policies"
 }
 
 
