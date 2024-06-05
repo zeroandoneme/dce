@@ -113,7 +113,7 @@ func (s *Service) UpsertPrincipalAccess(account *account.Account) error {
 
 		}
 
-		err = principalSvc.MergeRoleBluepi(role.PolicyName)
+		err = principalSvc.MergeRoleBluepi(role.RoleName)
 		if err != nil {
 			fmt.Printf("Failed to create role : %s", role.RoleName)
 			fmt.Println("")
