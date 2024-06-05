@@ -289,5 +289,9 @@ variable "bluepi_roles" {
       policy_name = "bluepi_policy_basic"
       role_name   = "bluepi_role_basic"
     },
+    {
+      policy_name = "bluepi_policy_advanced"
+      role_name   = "bluepi_role_advanced"
+    },
   ]
 }
