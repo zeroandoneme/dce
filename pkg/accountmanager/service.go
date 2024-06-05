@@ -96,6 +96,22 @@ func (s *Service) UpsertPrincipalAccess(account *account.Account) error {
 			log.Printf("Failed to create bluepi role : %s", role.RoleName)
 		}
 
+		err = principalSvc.DetachRoleWithPolicyBluepi(role.RoleName, role.PolicyName)
+
+		if err != nil {
+			fmt.Printf("Failed to deatach policy %s for role : %s", role.PolicyName, role.RoleName)
+			fmt.Println("")
+			fmt.Println("Policy deatach error : ", err)
+
+		}
+		err = principalSvc.DeletePolicyBluepi(role.PolicyName)
+
+		if err != nil {
+			fmt.Printf("Failed to delete policy %s ", role.PolicyName)
+			fmt.Println("Policy deletion error : ", err)
+
+		}
+
 		err = principalSvc.MergePolicyBluepi(role.PolicyName, role.RoleName)
 		if err != nil {
 			fmt.Printf("Failed to create bluepi policy : %s", role.PolicyName)
