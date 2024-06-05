@@ -28,7 +28,8 @@ type CreateController struct {
 	UserDetailer  api.UserDetailer
 }
 type PrincipalInfo struct {
-	Email string `json:"email"`
+	Email    string `json:"email"`
+	RoleName string `json:"rolename"`
 }
 
 // Call - function to return a specific AWS Lease record to the request
@@ -88,16 +89,26 @@ func (controller CreateController) Call(ctx context.Context, req *events.APIGate
 				fmt.Sprintf("Account %s could not be found", accountID))), nil
 	}
 
-	log.Printf("Assuming Role: %s", account.PrincipalRoleArn)
 	roleSessionName := user.Username
 	if roleSessionName == "" {
 		roleSessionName = lease.PrincipalID
 	}
+
 	assumeRoleInputs := sts.AssumeRoleInput{
 		RoleArn:         &account.PrincipalRoleArn,
 		RoleSessionName: aws.String(fmt.Sprintf("%s_%s", roleSessionName, principal.Email)),
-		// DurationSeconds: aws.Int64(14400),
 	}
+
+	if principal.RoleName != "" {
+		assumeRoleInputs = sts.AssumeRoleInput{
+			RoleArn:         aws.String(fmt.Sprintf("arn:aws:iam::%s:role/%s", accountID, principal.RoleName)),
+			RoleSessionName: aws.String(fmt.Sprintf("%s_%s", roleSessionName, principal.Email)),
+			DurationSeconds: aws.Int64(28800),
+		}
+
+	}
+	log.Printf("Assuming Role: %s", *assumeRoleInputs.RoleArn)
+
 	assumeRoleOutput, err := controller.TokenService.AssumeRole(
 		&assumeRoleInputs,
 	)
