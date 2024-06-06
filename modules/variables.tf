@@ -283,15 +283,18 @@ variable "bluepi_roles" {
   type = list(object({
     policy_name = string
     role_name   = string
+    description = string
   }))
   default = [
     {
       policy_name = "bluepi_policy_basic"
       role_name   = "bluepi_role_basic"
+      description = "bluepi basic role"
     },
     {
       policy_name = "bluepi_policy_advanced"
       role_name   = "bluepi_role_advanced"
+      description = "bluepi advanced role"
     },
   ]
 }
