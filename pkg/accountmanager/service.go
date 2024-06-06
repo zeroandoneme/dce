@@ -45,8 +45,9 @@ type Service struct {
 
 // Map bluepi roles string to array of Roles
 type Roles struct {
-	PolicyName string `json:"policy_name"`
-	RoleName   string `json:"role_name"`
+	PolicyName  string `json:"policy_name"`
+	RoleName    string `json:"role_name"`
+	Description string `json:"description"`
 }
 
 // ValidateAccess creates a new Account instance
@@ -121,7 +122,7 @@ func (s *Service) UpsertPrincipalAccess(account *account.Account) error {
 
 		}
 
-		err = principalSvc.MergePolicyBluepi(role.PolicyName, role.RoleName)
+		err = principalSvc.MergePolicyBluepi(role.PolicyName, role.RoleName, role.Description)
 		if err != nil {
 			fmt.Printf("Failed to create bluepi policy : %s", role.PolicyName)
 			fmt.Println("Policy creation error : ", err)

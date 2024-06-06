@@ -285,7 +285,7 @@ func (p *principalService) MergeRoleBluepi(role_name string) error {
 	return nil
 }
 
-func (p *principalService) MergePolicyBluepi(policy_name string, role_name string) error {
+func (p *principalService) MergePolicyBluepi(policy_name string, role_name string, description string) error {
 	log.Printf("MergePolicyBluepi")
 
 	policy, _, err := p.buildPolicyBluepi(policy_name)
@@ -308,7 +308,7 @@ func (p *principalService) MergePolicyBluepi(policy_name string, role_name strin
 
 	_, err = p.iamSvc.CreatePolicy(&iam.CreatePolicyInput{
 		PolicyName:     aws.String(policy_name),
-		Description:    aws.String(p.config.PrincipalPolicyDescription),
+		Description:    aws.String(description),
 		PolicyDocument: policy,
 	})
 
