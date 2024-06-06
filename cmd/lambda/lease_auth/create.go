@@ -28,8 +28,8 @@ type CreateController struct {
 	UserDetailer  api.UserDetailer
 }
 type PrincipalInfo struct {
-	Email    string `json:"email"`
-	RoleName string `json:"rolename"`
+	Email    string `json:"Email"`
+	RoleName string `json:"RoleName"`
 }
 
 // Call - function to return a specific AWS Lease record to the request
@@ -37,6 +37,8 @@ func (controller CreateController) Call(ctx context.Context, req *events.APIGate
 
 	leaseID := req.PathParameters["id"]
 	body := req.Body
+
+	log.Printf("Request Body : %s", body)
 
 	var principal PrincipalInfo
 	err := json.Unmarshal([]byte(body), &principal)
