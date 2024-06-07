@@ -74,11 +74,11 @@ resource "aws_s3_bucket_object" "bluepi_policy_basic" {
   etag   = filemd5("${local.bluepi_policies_local_path}/bluepi_policy_basic.tmpl")
 }
 
-resource "aws_s3_bucket_object" "bluepi_policy_advanced" {
+resource "aws_s3_bucket_object" "bluepi_policy_serverless" {
   bucket = aws_s3_bucket.artifacts.id
-  key    = "${local.bluepi_policies_keys_prefix}/bluepi_policy_advanced.tmpl"
-  source = "${local.bluepi_policies_local_path}/bluepi_policy_advanced.tmpl"
-  etag   = filemd5("${local.bluepi_policies_local_path}/bluepi_policy_advanced.tmpl")
+  key    = "${local.bluepi_policies_keys_prefix}/bluepi_policy_serverless.tmpl"
+  source = "${local.bluepi_policies_local_path}/bluepi_policy_serverless.tmpl"
+  etag   = filemd5("${local.bluepi_policies_local_path}/bluepi_policy_serverless.tmpl")
 }
 
 
