@@ -292,9 +292,9 @@ variable "bluepi_roles" {
       description = "bluepi basic role"
     },
     {
-      policy_name = "bluepi_policy_advanced"
-      role_name   = "bluepi_role_advanced"
-      description = "bluepi advanced role"
+      policy_name = "bluepi_policy_serverless"
+      role_name   = "bluepi_role_serverless"
+      description = "bluepi serverles role"
     },
   ]
 }
