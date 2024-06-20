@@ -279,3 +279,22 @@ variable "usage_table_wcu" {
   default     = 5
   description = "DynamoDB Usage table provisioned Write Capacity Units (WCUs). See https://aws.amazon.com/dynamodb/pricing/provisioned/"
 }
+variable "bluepi_roles" {
+  type = list(object({
+    policy_name = string
+    role_name   = string
+    description = string
+  }))
+  default = [
+    {
+      policy_name = "bluepi_policy_basic"
+      role_name   = "bluepi_role_basic"
+      description = "bluepi basic role"
+    },
+    {
+      policy_name = "bluepi_policy_serverless"
+      role_name   = "bluepi_role_serverless"
+      description = "bluepi serverles role"
+    },
+  ]
+}

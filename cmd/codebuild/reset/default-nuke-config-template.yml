@@ -31,11 +31,15 @@ accounts:
       - sso
     filters:
       IAMPolicy:
+        - type: "regex"
+          value: ".*bluepi.*" 
         - type: "contains"
           value: "{{ .PrincipalPolicy}}"
       IAMRole:
         - "{{ .AdminRole}}"
         - "{{ .PrincipalRole}}"
+        - type: "regex"
+          value: "^bluepi.*"
       IAMRolePolicy:
         - type: "contains"
           value: "{{ .AdminRole}}"
@@ -43,8 +47,15 @@ accounts:
           value: "{{ .PrincipalRole}}"
         - type: "contains"
           value: "{{ .PrincipalPolicy}}"
+        - type:  "regex"
+          value: "^bluepi.*"  
       IAMRolePolicyAttachment:
         # Do not remove the policy from the principal user role
         - "{{ .PrincipalRole}} -> {{ .PrincipalPolicy}}"
         - property: RoleName
           value: "{{ .AdminRole}}"
+        - type: "regex"
+          value: "^bluepi.*" # Deny removal of role-policy attachments where role starts with "bluepi"
+        - type: "regex"
+          property: PolicyName
+          value: "^bluepi.*"   
