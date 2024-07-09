@@ -1,7 +1,9 @@
 package accountmanager
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/Optum/dce/pkg/account"
@@ -28,6 +30,8 @@ type ServiceConfig struct {
 	TagAppName                  string   `env:"TAG_APP_NAME" envDefault:"DefaultTagAppName"`
 	PrincipalRoleDescription    string   `env:"PRINCIPAL_ROLE_DESCRIPTION" envDefault:"Role for principal users of DCE"`
 	PrincipalPolicyDescription  string   `env:"PRINCIPAL_POLICY_DESCRIPTION" envDefault:"Policy for principal users of DCE"`
+	BluepiRoleJson              string   `env:"BLUEPI_ROLES_JSON" envDefault:""`
+	BluepiPoliciesPath          string   `env:"BLUEPI_POLICIES_PATH" envDefault:""`
 	tags                        []*iam.Tag
 	assumeRolePolicy            string
 }
@@ -37,6 +41,13 @@ type Service struct {
 	client   clienter
 	storager common.Storager
 	config   ServiceConfig
+}
+
+// Map bluepi roles string to array of Roles
+type Roles struct {
+	PolicyName  string `json:"policy_name"`
+	RoleName    string `json:"role_name"`
+	Description string `json:"description"`
 }
 
 // ValidateAccess creates a new Account instance
@@ -60,6 +71,17 @@ func (s *Service) UpsertPrincipalAccess(account *account.Account) error {
 		return errors.NewValidation("account", err)
 	}
 
+	rolesJSON := s.config.BluepiRoleJson
+
+	var bluepiRoles []Roles
+	err = json.Unmarshal([]byte(rolesJSON), &bluepiRoles)
+	fmt.Printf("Decoding bluepi roles json: %s", rolesJSON)
+
+	if err != nil {
+		fmt.Println("Error decoding bluepi roles json:", err)
+		return err
+	}
+
 	iamSvc := s.client.IAM(account.AdminRoleArn)
 
 	principalSvc := principalService{
@@ -67,6 +89,51 @@ func (s *Service) UpsertPrincipalAccess(account *account.Account) error {
 		storager: s.storager,
 		account:  account,
 		config:   s.config,
+	}
+
+	for _, role := range bluepiRoles {
+
+		err = principalSvc.DetachRoleWithPolicyBluepi(role.RoleName, role.PolicyName)
+
+		if err != nil {
+			fmt.Printf("Failed to deatach policy %s for role : %s", role.PolicyName, role.RoleName)
+			fmt.Println("")
+			fmt.Println("Policy deatach error : ", err)
+
+			err = principalSvc.DeletePolicyBluepi(role.PolicyName)
+
+			if err != nil {
+				fmt.Printf("Failed to delete policy %s ", role.PolicyName)
+				fmt.Println("Policy deletion error : ", err)
+
+			}
+			err = principalSvc.DeleteRoleBluepi(role.RoleName)
+			if err != nil {
+				log.Printf("Failed to delete role : %s", role.RoleName)
+			}
+
+		}
+
+		err = principalSvc.MergeRoleBluepi(role.RoleName)
+		if err != nil {
+			fmt.Printf("Failed to create role : %s", role.RoleName)
+			fmt.Println("")
+			fmt.Println("Role creation error : ", err)
+
+		}
+
+		err = principalSvc.MergePolicyBluepi(role.PolicyName, role.RoleName, role.Description)
+		if err != nil {
+			fmt.Printf("Failed to create bluepi policy : %s", role.PolicyName)
+			fmt.Println("Policy creation error : ", err)
+
+		}
+
+		err = principalSvc.AttachRoleWithPolicyBluepi(role.RoleName, role.PolicyName)
+		if err != nil {
+			log.Printf("Failed to attach bluepi policy : %s  to role  : %s", role.PolicyName, role.RoleName)
+		}
+
 	}
 
 	err = principalSvc.MergeRole()
@@ -99,11 +166,42 @@ func (s *Service) DeletePrincipalAccess(account *account.Account) error {
 
 	iamSvc := s.client.IAM(account.AdminRoleArn)
 
+	rolesJSON := s.config.BluepiRoleJson
+
+	var bluepiRoles []Roles
+	err = json.Unmarshal([]byte(rolesJSON), &bluepiRoles)
+	fmt.Printf("Decoding bluepi roles json: %s", rolesJSON)
+
+	if err != nil {
+		fmt.Println("Error decoding bluepi roles json:", err)
+		return err
+	}
+
 	principalSvc := principalService{
 		iamSvc:   iamSvc,
 		storager: s.storager,
 		account:  account,
 		config:   s.config,
+	}
+
+	for _, role := range bluepiRoles {
+		err = principalSvc.DetachRoleWithPolicyBluepi(role.RoleName, role.PolicyName)
+		if err != nil {
+			log.Printf("Failed to detachrolewithpolicy : %s", role.RoleName)
+		}
+
+		err = principalSvc.DeletePolicyBluepi(role.PolicyName)
+		if err != nil {
+			fmt.Printf("Failed to delete policy : %s", role.PolicyName)
+			fmt.Println("Policy deletion error : ", err)
+
+		}
+
+		err = principalSvc.DeleteRoleBluepi(role.RoleName)
+		if err != nil {
+			log.Printf("Failed to delete role : %s", role.RoleName)
+		}
+
 	}
 
 	err = principalSvc.DetachRoleWithPolicy()
