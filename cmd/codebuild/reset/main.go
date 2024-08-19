@@ -164,15 +164,17 @@ func nukeAccount(svc *service, isDryRun bool) error {
 func notifyAccountResetFailed(dbSvc db.DBer, snsSvc common.Notificationer, childAccountId string, snsTopic string) error {
 
 	account, err_get := dbSvc.GetAccount(childAccountId)
+	fmt.Printf("account: %+v\n", account)
+
 	if err_get != nil {
 		return err_get
 	}
 
 	snsMessage, error_msg := common.PrepareSNSMessageJSON(account)
+	log.Printf("snsMessage : %s ", snsMessage)
 	if error_msg != nil {
 		return error_msg
 	}
-	log.Print(snsMessage)
 
 	_, err_publish := snsSvc.PublishMessage(aws.String(snsTopic), aws.String(snsMessage), true)
 	if err_publish != nil {
