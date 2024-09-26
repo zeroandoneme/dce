@@ -32,9 +32,9 @@ resource "aws_sqs_queue_policy" "allow_send_message" {
       {
         Effect = "Allow"
         Principal = {
-          AWS = "arn:aws:iam::630116293498:role/dce-admin-execute"  # Replace with your role's ARN or use variables
+          AWS = "arn:aws:iam::630116293498:role/dce-admin-execute"
         }
-        Action = "sqs:SendMessage"
+        Action   = "sqs:SendMessage"
         Resource = aws_sqs_queue.account_reset.arn
       }
     ]
