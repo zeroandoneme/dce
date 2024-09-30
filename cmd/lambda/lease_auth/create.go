@@ -105,6 +105,7 @@ func (controller CreateController) Call(ctx context.Context, req *events.APIGate
 		assumeRoleInputs = sts.AssumeRoleInput{
 			RoleArn:         aws.String(fmt.Sprintf("arn:aws:iam::%s:role/%s", accountID, principal.RoleName)),
 			RoleSessionName: aws.String(fmt.Sprintf("%s_%s", roleSessionName, principal.Email)),
+			DurationSeconds: aws.Int64(28800),
 		}
 
 	}
@@ -153,6 +154,7 @@ func (controller CreateController) buildConsoleURL(creds sts.Credentials) (strin
 	q.Add("Action", "login")
 	q.Add("Issuer", "DCE")
 	q.Add("SigninToken", signinToken)
+	q.Add("SessionDuration", fmt.Sprintf("%d", 28800))
 	req.URL.RawQuery = q.Encode()
 
 	return req.URL.String(), nil
