@@ -22,6 +22,25 @@ resource "aws_sqs_queue" "account_reset_dlq" {
   visibility_timeout_seconds = 60
 }
 
+# Policy to allow a role to send messages to the SQS queue
+resource "aws_sqs_queue_policy" "allow_send_message" {
+  queue_url = aws_sqs_queue.account_reset.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::932356933194:role/dce-admin-execute"  # Replace with your role's ARN or use variables
+        }
+        Action   = "sqs:SendMessage"
+        Resource = aws_sqs_queue.account_reset.arn
+      }
+    ]
+  })
+}
+
 # Lambda function to add all NotReady accounts to the reset queue
 module "populate_reset_queue" {
   source          = "./lambda"
