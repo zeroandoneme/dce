@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"unicode/utf8"
 
 	"github.com/Optum/dce/pkg/api"
 	"github.com/Optum/dce/pkg/api/response"
@@ -30,6 +31,14 @@ type CreateController struct {
 type PrincipalInfo struct {
 	Email    string `json:"Email"`
 	RoleName string `json:"RoleName"`
+}
+
+// truncate string if its more than 64
+func truncateToMaxLength(input string, maxLength int) string {
+	if utf8.RuneCountInString(input) > maxLength {
+		return string([]rune(input)[:maxLength])
+	}
+	return input
 }
 
 // Call - function to return a specific AWS Lease record to the request
@@ -102,9 +111,14 @@ func (controller CreateController) Call(ctx context.Context, req *events.APIGate
 	}
 
 	if principal.RoleName != "" {
+		rawSessionName := fmt.Sprintf("%s_%s", roleSessionName, principal.Email)
+		maxSessionNameLength := 64
+		trimmedSessionName := truncateToMaxLength(rawSessionName, maxSessionNameLength)
+		log.Printf("Assuming Role  With Session Name : %s", trimmedSessionName)
+
 		assumeRoleInputs = sts.AssumeRoleInput{
 			RoleArn:         aws.String(fmt.Sprintf("arn:aws:iam::%s:role/%s", accountID, principal.RoleName)),
-			RoleSessionName: aws.String(fmt.Sprintf("%s_%s", roleSessionName, principal.Email)),
+			RoleSessionName: aws.String(trimmedSessionName),
 		}
 
 	}
