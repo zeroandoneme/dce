@@ -1,3 +1,72 @@
+## v0.41.0
+
+- Block Amazon Bedrock KnowledgeBase service for AWS DCE accounts
+
+## v0.40.0
+
+- Update aws-nuke to a version based on ekristen/aws-nuke
+
+## v0.39.0
+
+- Update to querying for a dynamodb call in GetLeases
+
+## v0.38.0
+
+- Update aws-nuke to fix AppStreamImage, MSKCluster, WAFRegionalRule, and CloudformationStacks
+- Disable kms:PutKeyPolicy from users
+
+## v0.37.5
+
+- Update aws-nuke to fix NetworkFirewall issues
+
+## v0.37.4
+
+- Update pip packages
+- Update golang packages
+
+## v0.37.3
+
+- Deny DCE user from creating support tickets
+
+## v0.37.2
+
+- Update pip packages
+- Update golang packages
+
+## v0.37.1
+
+- Update pip packages
+- Update golang packages
+- Update Golang runtime
+
+## v0.37.0
+
+- Update pipelines to use latest terraform
+- Update terraform required version to be 0.13.7 as minimum viable to run module
+
+## v0.36.1
+
+- Fix: Remove default 25 scan limit when querying for leases
+
+## v0.36.0
+
+- change aws-nuke to directly use opensource version
+
+## v0.35.3
+
+- upgrade the aws nuke version from  v2.0.2 to v2.0.3
+
+## v0.35.2
+
+- upgrade the aws nuke version from  v2.0. 1 to v2.0.2
+
+## v0.35.1
+
+- Fix: Terraform formatting
+
+## v0.35.0
+
+- Add: Added blanket * allow permission in place of specific allow permissions for easier integration with future AWS products github.com/Optum/dce (#467)
 
 ## v0.34.2
 
@@ -7,7 +76,7 @@
 
 - Add: Enable network-firewall:ListRuleGroups permission (#449)
 - Fix: Recent changes to AWS S3 default bucket policy have broken the install. Removing ACL from the bucket allows the installation to proceed.
-  
+
 ## v0.34.0
 
 - Fix: get latest aws-nuke release. (#432)

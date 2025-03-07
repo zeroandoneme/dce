@@ -8,8 +8,8 @@ trigger:
       - "v*"
 
 variables:
-  GO_VERSION: 1.19
-  TERRAFORM_VERSION: 0.12.31
+  GO_VERSION: 1.21.6
+  TERRAFORM_VERSION: 1.7.4
 
 # Run builds for PRs against `master`
 pr:
@@ -216,9 +216,16 @@ stages:
 
                 # terraform init
                 - bash: |
+                    set -ex
                     cd modules
                     cat ./backend.tf
                     terraform init -input=false
+
+                    terraform plan \
+                      -var="namespace=${NAMESPACE}" \
+                      -var="budget_notification_from_email=${NOTIFY_EMAIL}" \
+                      -var="reset_nuke_toggle=false"
+
                     terraform apply \
                       -auto-approve \
                       -input=false \
@@ -341,13 +348,12 @@ stages:
 
                 - bash: |
                     set -ex
-                    namespace=$(cat ./namespace.txt)
+                    export TF_VAR_namespace=$(cat ./namespace.txt)
+                    export TF_VAR_budget_notification_from_email=$(NOTIFY_EMAIL)
 
                     cd modules
                     terraform init -input=false
-                    terraform destroy -force \
-                      -var="namespace=$(namespace)" \
-                      -var="budget_notification_from_email=$(NOTIFY_EMAIL)"
+                    terraform destroy -auto-approve
                   displayName: "Terraform destroy"
 
                 # End the DCE lease
