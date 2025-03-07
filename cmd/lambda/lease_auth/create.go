@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"unicode/utf8"
 
 	"github.com/Optum/dce/pkg/api"
 	"github.com/Optum/dce/pkg/api/response"
@@ -27,11 +28,33 @@ type CreateController struct {
 	FederationURL string
 	UserDetailer  api.UserDetailer
 }
+type PrincipalInfo struct {
+	Email    string `json:"Email"`
+	RoleName string `json:"RoleName"`
+}
+
+// truncate string if its more than 64
+func truncateToMaxLength(input string, maxLength int) string {
+	if utf8.RuneCountInString(input) > maxLength {
+		return string([]rune(input)[:maxLength])
+	}
+	return input
+}
 
 // Call - function to return a specific AWS Lease record to the request
 func (controller CreateController) Call(ctx context.Context, req *events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
 	leaseID := req.PathParameters["id"]
+	body := req.Body
+
+	log.Printf("Request Body : %s", body)
+
+	var principal PrincipalInfo
+	err := json.Unmarshal([]byte(body), &principal)
+	if err != nil {
+		log.Printf("Error in decoding request body %s", err)
+	}
+	log.Printf("Principal Email : %s", principal.Email)
 
 	// Get the Lease Information
 	lease, err := controller.Dao.GetLeaseByID(leaseID)
@@ -77,15 +100,30 @@ func (controller CreateController) Call(ctx context.Context, req *events.APIGate
 				fmt.Sprintf("Account %s could not be found", accountID))), nil
 	}
 
-	log.Printf("Assuming Role: %s", account.PrincipalRoleArn)
 	roleSessionName := user.Username
 	if roleSessionName == "" {
 		roleSessionName = lease.PrincipalID
 	}
+
 	assumeRoleInputs := sts.AssumeRoleInput{
 		RoleArn:         &account.PrincipalRoleArn,
-		RoleSessionName: aws.String(roleSessionName),
+		RoleSessionName: aws.String(fmt.Sprintf("%s_%s", roleSessionName, principal.Email)),
 	}
+
+	if principal.RoleName != "" {
+		rawSessionName := fmt.Sprintf("%s_%s", roleSessionName, principal.Email)
+		maxSessionNameLength := 64
+		trimmedSessionName := truncateToMaxLength(rawSessionName, maxSessionNameLength)
+		log.Printf("Assuming Role  With Session Name : %s", trimmedSessionName)
+
+		assumeRoleInputs = sts.AssumeRoleInput{
+			RoleArn:         aws.String(fmt.Sprintf("arn:aws:iam::%s:role/%s", accountID, principal.RoleName)),
+			RoleSessionName: aws.String(trimmedSessionName),
+		}
+
+	}
+	log.Printf("Assuming Role : %s", *assumeRoleInputs.RoleArn)
+
 	assumeRoleOutput, err := controller.TokenService.AssumeRole(
 		&assumeRoleInputs,
 	)
@@ -139,11 +177,13 @@ func (controller CreateController) getSigninToken(creds sts.Credentials) (string
 		AccessKeyID     string `json:"sessionId"`
 		SecretAccessKey string `json:"sessionKey"`
 		SessionToken    string `json:"sessionToken"`
+		SessionDuration int    `json:"SessionDuration"`
 	}
 	credentialString, err := json.Marshal(&signinCredentialsInput{
 		AccessKeyID:     *creds.AccessKeyId,
 		SecretAccessKey: *creds.SecretAccessKey,
 		SessionToken:    *creds.SessionToken,
+		SessionDuration: 28800,
 	})
 	if err != nil {
 		log.Printf("Error marshalling credentials: %s", err)

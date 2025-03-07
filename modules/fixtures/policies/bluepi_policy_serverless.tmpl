@@ -1,0 +1,161 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DoNotModifySelf",
+      "Effect": "Deny",
+      "NotAction": [
+        "iam:GetPolicy",
+        "iam:GetPolicyVersion",
+        "iam:GetRole",
+        "iam:GetRolePolicy",
+        "iam:ListRoles",
+        "iam:ListRolePolicies",
+        "iam:ListAttachedRolePolicies",
+        "iam:ListRoleTags",
+        "iam:ListPoliciesGrantingServiceAccess",
+        "iam:ListEntitiesForPolicy",
+        "iam:ListPolicyVersions",
+        "iam:GenerateServiceLastAccessedDetails"
+      ],
+      "Resource": [
+        "{{.PrincipalPolicyArn}}",
+        "{{.PrincipalRoleArn}}",
+        "{{.AdminRoleArn}}",
+        "arn:aws:iam::{{.ChildAccountId}}:role/bluepi*",
+        "arn:aws:iam::{{.ChildAccountId}}:policy/bluepi*"
+      ]
+    },
+    {
+      "Sid": "DenyTaggedResourcesAWS",
+      "Effect": "Deny",
+      "Action": "*",
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/AppName": [
+            "{{ StringsJoin .PrincipalIAMDenyTags \", \"}}"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "DenyIAM",
+      "Effect": "Deny",
+      "Action": [
+        "iam:DeactivateMFADevice",
+        "iam:CreateSAMLProvider",
+        "iam:UpdateAccountPasswordPolicy",
+        "iam:DeleteVirtualMFADevice",
+        "iam:EnableMFADevice",
+        "iam:CreateAccountAlias",
+        "iam:DeleteAccountAlias",
+        "iam:UpdateSAMLProvider",
+        "iam:DeleteSAMLProvider",
+        "iam:CreateUser",
+        "iam:DeleteUser",
+        "iam:UpdateUser",
+        "iam:UpdateLoginProfile",
+        "iam:CreateLoginProfile",
+        "iam:DeleteLoginProfile",
+        "iam:ChangePassword",
+        "iam:UpdateUserPolicy",
+        "iam:AttachUserPolicy",
+        "iam:DetachUserPolicy",
+        "iam:PutUserPolicy",
+        "iam:DeleteUserPolicy",
+        "iam:AddUserToGroup",
+        "iam:RemoveUserFromGroup",
+        "iam:ListAccessKeys",
+        "iam:CreateAccessKey",
+        "iam:UpdateAccessKey",
+        "iam:DeleteAccessKey",
+        "iam:ListSSHPublicKeys",
+        "iam:UploadSSHPublicKey",
+        "iam:UpdateSSHPublicKey",
+        "iam:DeleteSSHPublicKey",
+        "iam:ListServiceSpecificCredentials",
+        "iam:CreateServiceSpecificCredential",
+        "iam:UpdateServiceSpecificCredential",
+        "iam:DeleteServiceSpecificCredential",
+        "iam:ListUserTags",
+        "iam:TagUser",
+        "iam:UntagUser",
+        "iam:GenerateCredentialReport",
+        "iam:GetCredentialReport",
+        "iam:GenerateServiceLastAccessedDetails",
+        "iam:GetServiceLastAccessedDetails"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "ViewBillingBudgetsQuotas",
+      "Effect": "Allow",
+      "Action": [
+        "aws-portal:ViewBilling",
+        "aws-portal:ViewUsage",
+        "budgets:ViewBudget",
+        "servicequotas:*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AllowedServerlessServices",
+      "Effect": "Allow",
+      "Action": [
+        "apigateway:*",
+        "athena:*",
+        "backup:*",
+        "cloud9:*",
+        "cloudformation:*",
+        "cloudfront:*",
+        "cloudwatch:*",
+        "cognito-identity:*",
+        "cognito-idp:*",
+        "comprehend:*",
+        "config:*",
+        "datapipeline:*",
+        "dax:*",
+        "dynamodb:*",
+        "events:*",
+        "execute-api:*",
+        "firehose:*",
+        "glue:*",
+        "iam:*",
+        "iot:*",
+        "iotanalytics:*",
+        "kinesis:*",
+        "kinesisanalytics:*",
+        "kinesisvideo:*",
+        "kms:*",
+        "lakeformation:*",
+        "lambda:*",
+        "logs:*",
+        "machinelearning:*",
+        "mediaconvert:*",
+        "mobilehub:*",
+        "rekognition:*",
+        "resource-groups:*",
+        "s3:*",
+        "sagemaker:*",
+        "secretsmanager:*",
+        "sns:*",
+        "sqs:*",
+        "ssm:*",
+        "states:*",
+        "sts:*",
+        "tag:*",
+        "transfer:*",
+        "ssm-guiconnect:*"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": [
+            {{$first := true}}{{range .Regions}}{{if $first}}{{$first = false}}{{else}},{{end}}"{{.}}"{{end}}
+          ]
+        }
+      }
+    }
+  ]
+}

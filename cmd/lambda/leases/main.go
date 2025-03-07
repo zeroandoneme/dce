@@ -73,6 +73,13 @@ func init() {
 			HandlerFunc: DeleteLeaseByID,
 		},
 		api.Route{
+			Name:        "UpdateLeaseByID",
+			Method:      "PUT",
+			Pattern:     "/leases/{leaseID}",
+			Queries:     api.EmptyQueryString,
+			HandlerFunc: UpdateLeaseByID,
+		},
+		api.Route{
 			Name:        "DeleteLease",
 			Method:      "DELETE",
 			Pattern:     "/leases",

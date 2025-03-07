@@ -1,6 +1,8 @@
 locals {
-  principal_role_name   = "DCEPrincipal${var.namespace == "prod" ? "" : "-${var.namespace}"}"
-  principal_policy_name = "DCEPrincipalDefaultPolicy${var.namespace == "prod" ? "" : "-${var.namespace}"}"
+  principal_role_name     = "DCEPrincipal${var.namespace == "prod" ? "" : "-${var.namespace}"}"
+  principal_policy_name   = "DCEPrincipalDefaultPolicy${var.namespace == "prod" ? "" : "-${var.namespace}"}"
+  bluepi_role_json        = jsonencode(var.bluepi_roles)
+  bluepi_policies_s3_path = "fixtures/policies"
 }
 
 module "accounts_lambda" {
@@ -27,10 +29,12 @@ module "accounts_lambda" {
     PRINCIPAL_POLICY_NAME          = local.principal_policy_name
     PRINCIPAL_IAM_DENY_TAGS        = join(",", var.principal_iam_deny_tags)
     ALLOWED_REGIONS                = join(",", var.allowed_regions)
-    PRINCIPAL_MAX_SESSION_DURATION = 14400
+    PRINCIPAL_MAX_SESSION_DURATION = 28800
     TAG_ENVIRONMENT                = var.namespace == "prod" ? "PROD" : "NON-PROD"
     TAG_APP_NAME                   = lookup(var.global_tags, "AppName")
     PRINCIPAL_POLICY_S3_KEY        = aws_s3_object.principal_policy.key
+    BLUEPI_ROLES_JSON              = local.bluepi_role_json
+    BLUEPI_POLICIES_PATH           = local.bluepi_policies_s3_path
   }
 }
 

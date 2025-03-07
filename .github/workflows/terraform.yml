@@ -1,0 +1,53 @@
+name: 'Deploy DCE'
+
+on:
+  push:
+    branches: [ "prod" , "qa" ]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform:
+    name: 'deploy arch'
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/prod' && 'production' || 'qa' }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./modules
+
+    steps:
+    - name: Configure aws qa credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ vars.ROLE_NAME }}
+        aws-region: eu-west-1
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 0.12.31
+        terraform_wrapper: false
+
+    - name: Terraform Init
+      run: terraform init -backend-config="bucket=$BUCKET_NAME"
+      env:
+        BUCKET_NAME: ${{ vars.BUCKET_NAME }}
+
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    - name: Terraform Plan
+      run: terraform plan -input=false
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve -input=false
+
+    - name: Deploy Code
+      working-directory: ./
+      run: make deploy

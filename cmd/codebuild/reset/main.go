@@ -42,7 +42,14 @@ func main() {
 			!config.isNukeEnabled,
 		)
 		if err != nil {
+			log.Printf("Notifying Account Reset Failed for: %s", config.childAccountID)
+			err_notify := notifyAccountResetFailed(svc.db(), svc.snsService(), config.childAccountID, common.RequireEnv("RESET_FAILED_TOPIC_ARN"))
+
+			if err_notify != nil {
+				log.Printf("Failed notify acccount reset failed  ")
+			}
 			log.Fatalf("Failed to execute aws-nuke on account %s: %s\n", config.childAccountID, err)
+
 		}
 		log.Printf("%s  :  Nuke Success\n", config.childAccountID)
 	} else {
@@ -146,6 +153,29 @@ func nukeAccount(svc *service, isDryRun bool) error {
 	)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func notifyAccountResetFailed(dbSvc db.DBer, snsSvc common.Notificationer, childAccountId string, snsTopic string) error {
+
+	account, err_get := dbSvc.GetAccount(childAccountId)
+	fmt.Printf("account: %+v\n", account)
+
+	if err_get != nil {
+		return err_get
+	}
+
+	snsMessage, error_msg := common.PrepareSNSMessageJSON(account)
+	log.Printf("snsMessage : %s ", snsMessage)
+	if error_msg != nil {
+		return error_msg
+	}
+
+	_, err_publish := snsSvc.PublishMessage(aws.String(snsTopic), aws.String(snsMessage), true)
+	if err_publish != nil {
+		log.Printf("Issue in publishing message: %s" + err_publish.Error())
+		return err_publish
 	}
 	return nil
 }

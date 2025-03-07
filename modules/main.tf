@@ -1,4 +1,5 @@
 terraform {
+
   # Tested up to 1.7.4
   required_version = ">= 0.13.7"
 
@@ -7,11 +8,12 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.26.0"
     }
-  }
-}
 
-provider "aws" {
-  region = var.aws_region
+  backend "s3" {
+    key    = "dce"
+    region = "eu-west-1"
+
+  }
 }
 
 # Current AWS Account User

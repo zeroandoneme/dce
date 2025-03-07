@@ -700,6 +700,50 @@ paths:
         passthroughBehavior: "when_no_match"
       security:
         - sigv4: []
+    put:
+      summary: Update a lease by Id
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id
+          type: string
+          required: true
+          description: Id for lease
+        - in: body
+          name: lease
+          description: lease parameters to modify
+          schema:
+            type: object
+            properties:
+              BudgetAmount:
+                type: string
+                description: Budget to update the lease with
+              ExpiresOn:
+                type: string
+                description: Update the expiry of the lease
+      responses:
+        200:
+          $ref: "#/definitions/lease"
+          headers:
+            Access-Control-Allow-Headers:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Origin:
+              type: "string"
+        403:
+          description: "Forbidden"
+      x-amazon-apigateway-integration:
+        uri: ${leases_lambda}
+        httpMethod: "POST"
+        type: "aws_proxy"
+        passthroughBehavior: "when_no_match"
+      security:
+        - sigv4: []
+
     delete:
       summary: Delete a lease by ID.
       parameters:
