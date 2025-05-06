@@ -38,10 +38,11 @@ generate:
 # Before running this command, you will need
 deploy: clean build
 	cd modules && \
-	ns=$$(terraform output namespace) && \
-	bucket=$$(terraform output artifacts_bucket_name) && \
+	ns=$$(terraform output -raw namespace) && \
+	bucket=$$(terraform output -raw artifacts_bucket_name) && \
 	cd .. && \
-	./scripts/deploy.sh bin/build_artifacts.zip $${ns} $${bucket}
+	./scripts/deploy.sh bin/build_artifacts.zip $${ns} $${bucket} > deploy.log 2>&1 && \
+	echo "✅ Deployment complete. Full log saved to deploy.log"
 
 
 # `make documentation`
