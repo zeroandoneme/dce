@@ -3,14 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"net/url"
+
 	"github.com/Optum/dce/pkg/api"
 	"github.com/Optum/dce/pkg/config"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/awslabs/aws-lambda-go-api-proxy/gorillamux"
-	"log"
-	"net/url"
 )
 
 type accountControllerConfiguration struct {
@@ -83,6 +84,13 @@ func init() {
 			Pattern:     "/accounts",
 			Queries:     api.EmptyQueryString,
 			HandlerFunc: CreateAccount,
+		},
+		api.Route{
+			Name:        "ResetAccount",
+			Method:      "PUT",
+			Pattern:     "/accounts/{accountId}/reset",
+			Queries:     api.EmptyQueryString,
+			HandlerFunc: ResetAccount,
 		},
 	}
 	r := api.NewRouter(accountRoutes)

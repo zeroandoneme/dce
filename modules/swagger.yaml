@@ -303,6 +303,75 @@ paths:
         passthroughBehavior: "when_no_match"
       security:
         - sigv4: []
+  "/accounts/{id}/reset":   
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - CORS
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          "default":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'*'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            responseTemplates:
+              application/json: |
+                {}
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Headers:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Origin:
+              type: "string"
+    put:
+        summary: Reset an account by ID.
+        parameters:
+          - in: path
+            name: id
+            type: string
+            required: true
+            description: The ID of the account to be reseted.
+        responses:
+          204:
+            description: "The account reset process started"
+            headers:
+              Access-Control-Allow-Headers:
+                type: "string"
+              Access-Control-Allow-Methods:
+                type: "string"
+              Access-Control-Allow-Origin:
+                type: "string"
+          403:
+            description: "Unauthorized."
+          404:
+            description: "No account found for the given ID."
+          409:
+            description: "The account is unable to be reset."
+        x-amazon-apigateway-integration:
+          uri: ${accounts_lambda}
+          httpMethod: "POST"
+          type: "aws_proxy"
+          passthroughBehavior: "when_no_match"
+        security:
+          - sigv4: []         
   "/auth":
     options:
       summary: CORS support
