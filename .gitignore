@@ -93,3 +93,4 @@ venv.bak/
 /site
 
 tests/integration/test.cfg
+deploy.log
