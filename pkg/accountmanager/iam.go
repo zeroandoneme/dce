@@ -3,11 +3,13 @@ package accountmanager
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/Optum/dce/pkg/account"
 	"github.com/Optum/dce/pkg/common"
 	"github.com/Optum/dce/pkg/errors"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 )
@@ -265,9 +267,10 @@ func (p *principalService) deletePolicyVersion(version *iam.PolicyVersion) error
 
 func (p *principalService) MergeRoleBluepi(role_name string) error {
 	log.Printf("MergeRoleBluepi")
+	policyDocument := strings.ReplaceAll(p.config.assumeRolePolicy, "111111111111", p.config.AccountID)
 	_, err := p.iamSvc.CreateRole(&iam.CreateRoleInput{
 		RoleName:                 aws.String(role_name),
-		AssumeRolePolicyDocument: aws.String(p.config.assumeRolePolicy),
+		AssumeRolePolicyDocument: aws.String(policyDocument),
 		Description:              aws.String(p.config.PrincipalRoleDescription),
 		MaxSessionDuration:       aws.Int64(p.config.PrincipalMaxSessionDuration),
 		Tags: append(p.config.tags,
@@ -275,6 +278,14 @@ func (p *principalService) MergeRoleBluepi(role_name string) error {
 		),
 	})
 	if err != nil {
+		if awsErr, ok := err.(awserr.Error); ok {
+			// Structured AWS error
+			log.Printf("AWS Error: Code=%s, Message=%s", awsErr.Code(), awsErr.Message())
+			if reqErr, ok := awsErr.(awserr.RequestFailure); ok {
+				// Request-specific details
+				log.Printf("Request Error: StatusCode=%d, RequestID=%s", reqErr.StatusCode(), reqErr.RequestID())
+			}
+		}
 		if isAWSAlreadyExistsError(err) {
 			log.Printf("%s: for account %q; ignoring", err.Error(), *p.account.ID)
 		} else {
