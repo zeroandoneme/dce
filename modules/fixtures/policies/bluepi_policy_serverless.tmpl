@@ -34,7 +34,7 @@
       "Condition": {
         "StringEquals": {
           "aws:ResourceTag/AppName": [
-            "{{ StringsJoin .PrincipalIAMDenyTags \", \"}}"
+            "{{ StringsJoin .PrincipalIAMDenyTags "\", \""}}"
           ]
         }
       }

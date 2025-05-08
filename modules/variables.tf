@@ -296,5 +296,10 @@ variable "bluepi_roles" {
       role_name   = "bluepi_role_serverless"
       description = "bluepi serverles role"
     },
+    {
+      policy_name = "bluepi_policy_admin"
+      role_name   = "bluepi_role_admin"
+      description = "bluepi admin role"
+    },
   ]
 }
