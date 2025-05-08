@@ -265,9 +265,10 @@ func (p *principalService) deletePolicyVersion(version *iam.PolicyVersion) error
 
 func (p *principalService) MergeRoleBluepi(role_name string) error {
 	log.Printf("MergeRoleBluepi")
+	policyDocument := strings.ReplaceAll(p.config.assumeRolePolicy, "111111111111", p.config.AccountID)
 	_, err := p.iamSvc.CreateRole(&iam.CreateRoleInput{
 		RoleName:                 aws.String(role_name),
-		AssumeRolePolicyDocument: aws.String(p.config.assumeRolePolicy),
+		AssumeRolePolicyDocument: aws.String(policyDocument),
 		Description:              aws.String(p.config.PrincipalRoleDescription),
 		MaxSessionDuration:       aws.Int64(p.config.PrincipalMaxSessionDuration),
 		Tags: append(p.config.tags,

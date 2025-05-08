@@ -80,3 +80,10 @@ resource "aws_s3_bucket_object" "bluepi_policy_serverless" {
   source = "${local.bluepi_policies_local_path}/bluepi_policy_serverless.tmpl"
   etag   = filemd5("${local.bluepi_policies_local_path}/bluepi_policy_serverless.tmpl")
 }
+
+resource "aws_s3_object" "bluepi_policy_admin" {
+  bucket = aws_s3_bucket.artifacts.id
+  key    = "${local.bluepi_policies_keys_prefix}/bluepi_policy_admin.tmpl"
+  source = "${local.bluepi_policies_local_path}/bluepi_policy_admin.tmpl"
+  etag   = filemd5("${local.bluepi_policies_local_path}/bluepi_policy_admin.tmpl")
+}
