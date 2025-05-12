@@ -301,6 +301,6 @@ variable "bluepi_roles" {
       role_name   = "bluepi_role_admin"
       description = "bluepi admin role"
     },
-    
+
   ]
 }
