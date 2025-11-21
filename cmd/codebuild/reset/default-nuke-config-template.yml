@@ -7,25 +7,9 @@ regions:
 {{end}}
 
 
-blocklist:
+account-blacklist:
   - "{{ .ParentAccountID}}" # Arbitrary production account id
 
-settings:
-  EC2Image:
-    IncludeDisabled: true
-    IncludeDeprecated: true
-    DisableDeregistrationProtection: true
-  EC2Instance:
-    DisableStopProtection: true
-    DisableDeletionProtection: true
-  RDSInstance:
-    DisableDeletionProtection: true
-  CloudFormationStack:
-    DisableDeletionProtection: true
-  DynamoDBTable:
-    DisableDeletionProtection: true
-  QuickSightSubscription:
-    DisableTerminationProtection: true
 
 resource-types:
   excludes:
