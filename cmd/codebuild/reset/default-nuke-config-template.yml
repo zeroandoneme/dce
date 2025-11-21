@@ -7,7 +7,7 @@ regions:
 {{end}}
 
 
-blocklist:
+account-blocklist:
   - "{{ .ParentAccountID}}" # Arbitrary production account id
 
 settings:
