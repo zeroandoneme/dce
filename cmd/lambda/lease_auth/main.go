@@ -8,11 +8,11 @@ import (
 	"github.com/Optum/dce/pkg/api"
 	"github.com/Optum/dce/pkg/common"
 	"github.com/Optum/dce/pkg/db"
+	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
 	"github.com/aws/aws-sdk-go/service/sts"
-
-	"github.com/aws/aws-lambda-go/lambda"
 )
 
 const (
@@ -61,7 +61,9 @@ func newDBer() db.DBer {
 }
 
 func newAWSSession() *session.Session {
-	awsSession, err := session.NewSession()
+	awsSession, err := session.NewSession(&aws.Config{
+		Region: aws.String("us-east-1"),
+	})
 	if err != nil {
 		errorMessage := fmt.Sprintf("Failed to create AWS session: %s", err)
 		log.Fatal(errorMessage)
