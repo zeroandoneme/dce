@@ -8,11 +8,11 @@ import (
 	"github.com/Optum/dce/pkg/api"
 	"github.com/Optum/dce/pkg/common"
 	"github.com/Optum/dce/pkg/db"
+	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
 	"github.com/aws/aws-sdk-go/service/sts"
-
-	"github.com/aws/aws-lambda-go/lambda"
 )
 
 const (
@@ -27,7 +27,13 @@ func main() {
 
 	// Create the Token Service
 	awsSession := newAWSSession()
-	tokenSvc := common.STS{Client: sts.New(awsSession)}
+	stsClient := sts.New(awsSession) // ← CHANGED: Extract stsClient first
+
+	// ← ADD: Debug logging to verify STS configuration
+	log.Printf("STS Client Endpoint: %s", stsClient.Endpoint)
+	log.Printf("STS Client Region: %s", *awsSession.Config.Region)
+	// ← END OF ADDED LOGGING
+	tokenSvc := common.STS{Client: stsClient}
 	cognitoSvc := cognitoidentityprovider.New(awsSession)
 	userDetails := &api.UserDetails{
 		CognitoUserPoolID:        common.RequireEnv("COGNITO_USER_POOL_ID"),
@@ -61,7 +67,9 @@ func newDBer() db.DBer {
 }
 
 func newAWSSession() *session.Session {
-	awsSession, err := session.NewSession()
+	awsSession, err := session.NewSession(&aws.Config{
+		Region: aws.String("us-east-1"),
+	})
 	if err != nil {
 		errorMessage := fmt.Sprintf("Failed to create AWS session: %s", err)
 		log.Fatal(errorMessage)
