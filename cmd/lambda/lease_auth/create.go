@@ -169,6 +169,13 @@ func (controller CreateController) buildConsoleURL(creds sts.Credentials) (strin
 	q.Add("SigninToken", signinToken)
 	req.URL.RawQuery = q.Encode()
 
+	finalURL := req.URL.String()
+
+	// ADD THIS LOGGING:
+	log.Printf("Generated Console URL: %s", finalURL)
+	log.Printf("Destination: %s", controller.ConsoleURL)
+	log.Printf("Token expiration: %s", creds.Expiration)
+
 	return req.URL.String(), nil
 }
 

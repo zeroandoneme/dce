@@ -27,7 +27,13 @@ func main() {
 
 	// Create the Token Service
 	awsSession := newAWSSession()
-	tokenSvc := common.STS{Client: sts.New(awsSession)}
+	stsClient := sts.New(awsSession) // ← CHANGED: Extract stsClient first
+
+	// ← ADD: Debug logging to verify STS configuration
+	log.Printf("STS Client Endpoint: %s", stsClient.Endpoint)
+	log.Printf("STS Client Region: %s", *awsSession.Config.Region)
+	// ← END OF ADDED LOGGING
+	tokenSvc := common.STS{Client: stsClient}
 	cognitoSvc := cognitoidentityprovider.New(awsSession)
 	userDetails := &api.UserDetails{
 		CognitoUserPoolID:        common.RequireEnv("COGNITO_USER_POOL_ID"),
